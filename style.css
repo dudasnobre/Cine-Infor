@@ -375,6 +375,7 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
     width: min(100%, 170px);
     max-width: 170px;
     margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
   }
 
   .credits {
