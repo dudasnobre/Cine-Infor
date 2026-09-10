@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <meta
     http-equiv="Content-Security-Policy"
-    content="default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; form-action https://script.google.com https://*.googleusercontent.com; frame-src https://script.google.com https://*.googleusercontent.com; upgrade-insecure-requests"
+    content="default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://img.youtube.com; font-src 'self'; connect-src 'none'; form-action https://script.google.com https://*.googleusercontent.com; frame-src https://script.google.com https://*.googleusercontent.com; upgrade-insecure-requests"
   >
   <meta name="description" content="Cine Infor — cinema, projetos e experiências da turma de Informática.">
   <meta property="og:title" content="Cine Infor | Home">
@@ -156,13 +156,13 @@
           <svg viewBox="0 0 24 24">
             <rect x="3.5" y="6.5" width="17" height="11" rx="2"/>
             <path d="M3.5 10.5h17M8 15h2"/>
-          </svg> 
+          </svg>
 
           <div class="precos-lista">
 
             <div class="precos-destaque">
               <span>Ingresso por sessão</span>
-              <strong id="precoIngresso">R$ 2,00 </strong>
+              <strong id="precoIngresso">R$ 2,00</strong>
             </div>
 
             <div>
@@ -290,31 +290,30 @@
 
           <p id="sinopse" class="synopsis">
 
-           Deu tédio na hora do almoço? A Infor25 tem a solução! Venha assistir a filmes no horário do almoço por um preço incrível. O ingresso, a pipoca e o refresco são pagos separadamente, com preços acessíveis para você aproveitar a sessão completa. Então, está esperando o quê? Venha curtir essa experiência de cinema com a gente!
-
+            Deu tédio na hora do almoço? A Infor25 tem a solução! Venha assistir a filmes no horário do almoço por um preço incrível. O ingresso, a pipoca e o refresco são pagos separadamente, com preços acessíveis para você aproveitar a sessão completa. Então, está esperando o quê? Venha curtir essa experiência de cinema com a gente!
 
           </p>
 
-<a
-    class="trailer-slot"
-    href="https://youtu.be/N_-rLOuM54Q?si=FylFAZZgKu87Df3e"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Assistir ao trailer no YouTube"
->
-    <img
-        src="https://img.youtube.com/vi/N_-rLOuM54Q/maxresdefault.jpg"
-        alt="Trailer do filme"
-    >
 
-    <div class="trailer-play">
-        ▶
-    </div>
-</a>
+          <!-- TRAILER -->
 
-      
+          <a
+            class="trailer-slot"
+            href="https://youtu.be/N_-rLOuM54Q"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Assistir ao trailer no YouTube"
+          >
+            <img
+              src="https://img.youtube.com/vi/N_-rLOuM54Q/maxresdefault.jpg"
+              alt="Trailer do filme"
+            >
 
-          </div>
+            <div class="trailer-play">
+              ▶
+            </div>
+          </a>
+
 
         </div>
 
@@ -388,16 +387,11 @@
     </section>
 
 
-    <!-- ========================= -->
     <!-- FORMULÁRIO -->
-    <!-- ========================= -->
 
     <section class="form-section" id="formulario">
 
       <div class="cine-form-card">
-
-
-        <!-- CABEÇALHO DO FORMULÁRIO -->
 
         <div class="cine-form-header">
 
@@ -428,8 +422,6 @@
 
         <form id="formCineInfor">
 
-          <!-- CONFIRMAÇÃO DO E-MAIL INSTITUCIONAL -->
-
           <div class="campo verificacao-email">
 
             <label for="emailInstitucional">
@@ -441,6 +433,7 @@
             </p>
 
             <div class="verificacao-linha">
+
               <input
                 type="email"
                 id="emailInstitucional"
@@ -456,9 +449,12 @@
               >
                 Enviar código
               </button>
+
             </div>
 
+
             <div id="blocoCodigo" class="verificacao-codigo" hidden>
+
               <input
                 type="text"
                 id="codigoVerificacao"
@@ -477,266 +473,270 @@
               >
                 Confirmar e-mail
               </button>
+
             </div>
 
             <div id="emailStatus" class="email-status" aria-live="polite"></div>
 
           </div>
 
+
           <fieldset id="dadosPedido" disabled>
 
+            <div class="campo">
 
-          <!-- NOME -->
+              <label for="nome">
+                Nome completo:
+              </label>
 
-          <div class="campo">
+              <input
+                type="text"
+                id="nome"
+                required
+                placeholder="Digite seu nome.."
+              >
 
-            <label for="nome">
-              Nome completo:
-            </label>
+            </div>
 
-            <input
-              type="text"
-              id="nome"
-              required
-              placeholder="Digite seu nome.."
+
+            <div class="campo">
+
+              <label for="turma">
+                Turma:
+              </label>
+
+              <select id="turma" required>
+
+                <option value="">
+                  Selecione sua turma
+                </option>
+
+                <option value="1 ano Administração">
+                  1 ano Administração
+                </option>
+
+                <option value="1 ano Enfermagem">
+                  1 ano Enfermagem
+                </option>
+
+                <option value="1 ano Informática">
+                  1 ano Informática
+                </option>
+
+                <option value="1 ano Secretaria">
+                  1 ano Secretaria
+                </option>
+
+                <option value="2 ano Agronegócio">
+                  2 ano Agronegócio
+                </option>
+
+                <option value="2 ano Enfermagem">
+                  2 ano Enfermagem
+                </option>
+
+                <option value="2 ano Finanças">
+                  2 ano Finanças
+                </option>
+
+                <option value="2 ano Informática">
+                  2 ano Informática
+                </option>
+
+                <option value="3 ano Administração">
+                  3 ano Administração
+                </option>
+
+                <option value="3 ano Enfermagem">
+                  3 ano Enfermagem
+                </option>
+
+                <option value="3 ano Informática">
+                  3 ano Informática
+                </option>
+
+                <option value="3 ano Logística">
+                  3 ano Logística
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="campo">
+
+              <label>
+                Quantos ingressos?
+                <span id="precoIngressoTexto" class="preco-ajuda">
+                  (R$ 2,00 cada)
+                </span>
+              </label>
+
+              <p class="campo-ajuda">
+                Escolha de 1 a 10 ingressos neste pedido.
+              </p>
+
+              <div class="stepper" id="ingressoQtdStepper">
+
+                <button
+                  type="button"
+                  class="stepper-btn"
+                  id="ingressoQtdMenos"
+                  aria-label="Diminuir quantidade de ingressos"
+                >
+                  −
+                </button>
+
+                <span id="ingressoQtdValor" aria-live="polite">1</span>
+
+                <button
+                  type="button"
+                  class="stepper-btn"
+                  id="ingressoQtdMais"
+                  aria-label="Aumentar quantidade de ingressos"
+                >
+                  +
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <div class="campo">
+
+              <label>
+                Vai querer pipoca?
+              </label>
+
+              <div class="opcoes">
+
+                <label>
+
+                  <input
+                    type="radio"
+                    name="pipoca"
+                    value="sim"
+                    id="pipocaSim"
+                    required
+                  >
+
+                  <span>Sim</span>
+
+                </label>
+
+
+                <label>
+
+                  <input
+                    type="radio"
+                    name="pipoca"
+                    value="nao"
+                    id="pipocaNao"
+                  >
+
+                  <span>Não</span>
+
+                </label>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="campo campo-pipoca"
+              id="blocoTipoPipoca"
+              style="display: none;"
             >
 
-          </div>
-
-
-          <!-- TURMA -->
-
-          <div class="campo">
-
-            <label for="turma">
-              Turma:
-            </label>
-
-            <select id="turma" required>
-
-              <option value="">
-                Selecione sua turma
-              </option>
-
-              <option value="1 ano Administração">
-                1 ano Administração
-              </option>
-
-              <option value="1 ano Enfermagem">
-                1 ano Enfermagem
-              </option>
-
-              <option value="1 ano Informática">
-                1 ano Informática
-              </option>
-
-              <option value="1 ano Secretaria">
-                1 ano Secretaria
-              </option>
-
-              <option value="2 ano Agronegócio">
-                2 ano Agronegócio
-              </option>
-
-              <option value="2 ano Enfermagem">
-                2 ano Enfermagem
-              </option>
-
-              <option value="2 ano Finanças">
-                2 ano Finanças
-              </option>
-
-              <option value="2 ano Informática">
-                2 ano Informática
-              </option>
-
-              <option value="3 ano Administração">
-                3 ano Administração
-              </option>
-
-              <option value="3 ano Enfermagem">
-                3 ano Enfermagem
-              </option>
-
-              <option value="3 ano Informática">
-                3 ano Informática
-              </option>
-
-              <option value="3 ano Logística">
-                3 ano Logística
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <!-- INGRESSOS -->
-
-          <div class="campo">
-
-            <label>
-              Quantos ingressos? <span id="precoIngressoTexto" class="preco-ajuda">(R$ 2,00 cada)</span>
-            </label>
-
-            <p class="campo-ajuda">Escolha de 1 a 10 ingressos neste pedido.</p>
-
-            <div class="stepper" id="ingressoQtdStepper">
-
-              <button
-                type="button"
-                class="stepper-btn"
-                id="ingressoQtdMenos"
-                aria-label="Diminuir quantidade de ingressos"
-              >−</button>
-
-              <span id="ingressoQtdValor" aria-live="polite">1</span>
-
-              <button
-                type="button"
-                class="stepper-btn"
-                id="ingressoQtdMais"
-                aria-label="Aumentar quantidade de ingressos"
-              >+</button>
-
-            </div>
-
-          </div>
-
-
-          <!-- PIPOCA -->
-
-          <div class="campo">
-
-            <label>
-              Vai querer pipoca?
-            </label>
-
-            <div class="opcoes">
-
               <label>
-
-                <input
-                  type="radio"
-                  name="pipoca"
-                  value="sim"
-                  id="pipocaSim"
-                  required
+                Quantas pipocas?
+                <span
+                  id="precoPipocaTexto"
+                  style="color:var(--muted); font-weight:500;"
                 >
-
-                <span>Sim</span>
-
+                  (R$ 1,50 cada)
+                </span>
               </label>
 
+              <div class="stepper" id="pipocaQtdStepper">
 
-              <label>
-
-                <input
-                  type="radio"
-                  name="pipoca"
-                  value="nao"
-                  id="pipocaNao"
+                <button
+                  type="button"
+                  class="stepper-btn"
+                  id="pipocaQtdMenos"
+                  aria-label="Diminuir quantidade de pipoca"
                 >
+                  −
+                </button>
 
-                <span>Não</span>
+                <span id="pipocaQtdValor">1</span>
 
+                <button
+                  type="button"
+                  class="stepper-btn"
+                  id="pipocaQtdMais"
+                  aria-label="Aumentar quantidade de pipoca"
+                >
+                  +
+                </button>
+
+              </div>
+
+
+              <label style="margin-top: 6px;">
+                Qual tipo, para cada pipoca?
               </label>
 
-            </div>
-
-          </div>
-
-
-          <!-- ================================= -->
-          <!-- TIPO DA PIPOCA -->
-          <!-- APARECE AO CLICAR EM SIM -->
-          <!-- ================================= -->
-
-          <div
-            class="campo campo-pipoca"
-            id="blocoTipoPipoca"
-            style="display: none;"
-          >
-
-            <label>
-              Quantas pipocas? <span id="precoPipocaTexto" style="color:var(--muted); font-weight:500;">(R$ 1,50 cada)</span>
-            </label>
-
-            <div class="stepper" id="pipocaQtdStepper">
-
-              <button
-                type="button"
-                class="stepper-btn"
-                id="pipocaQtdMenos"
-                aria-label="Diminuir quantidade de pipoca"
-              >−</button>
-
-              <span id="pipocaQtdValor">1</span>
-
-              <button
-                type="button"
-                class="stepper-btn"
-                id="pipocaQtdMais"
-                aria-label="Aumentar quantidade de pipoca"
-              >+</button>
+              <div class="lista-pipocas" id="listaPipocas">
+                <!-- Gerado dinamicamente pelo JavaScript conforme a quantidade escolhida -->
+              </div>
 
             </div>
 
-            <label style="margin-top: 6px;">
-              Qual tipo, para cada pipoca?
-            </label>
 
-            <div class="lista-pipocas" id="listaPipocas">
-              <!-- Gerado dinamicamente pelo JavaScript conforme a quantidade escolhida -->
-            </div>
-
-          </div>
-
-
-          <!-- REFRIGERANTE -->
-
-          <div class="campo">
-
-            <label>
-              Vai querer refrigerante?
-            </label>
-
-            <div class="opcoes">
+            <div class="campo">
 
               <label>
-
-                <input
-                  type="radio"
-                  name="refri"
-                  value="sim"
-                  required
-                >
-
-                <span>Sim</span>
-
+                Vai querer refrigerante?
               </label>
 
+              <div class="opcoes">
 
-              <label>
+                <label>
 
-                <input
-                  type="radio"
-                  name="refri"
-                  value="nao"
-                >
+                  <input
+                    type="radio"
+                    name="refri"
+                    value="sim"
+                    required
+                  >
 
-                <span>Não</span>
+                  <span>Sim</span>
 
-              </label>
+                </label>
+
+
+                <label>
+
+                  <input
+                    type="radio"
+                    name="refri"
+                    value="nao"
+                  >
+
+                  <span>Não</span>
+
+                </label>
+
+              </div>
 
             </div>
-
-          </div>
 
           </fieldset>
 
-
-          <!-- BOTÃO -->
 
           <button
             type="submit"
@@ -757,8 +757,6 @@
         ></div>
 
 
-        <!-- RESULTADO DO PEDIDO: resumo + QR Code Pix + ticket em PDF -->
-
         <div
           id="resultadoPedido"
           class="resultado-pedido"
@@ -775,20 +773,44 @@
             </p>
 
             <p class="aviso-reembolso">
+
               Em caso de reembolso, entre em contato pelo
+
               <a
                 href="https://wa.me/5585999999999?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20reembolso%20de%20um%20pedido%20do%20Cine%20Infor."
                 target="_blank"
                 rel="noopener noreferrer"
-              >WhatsApp</a>.
+              >
+                WhatsApp
+              </a>.
+
             </p>
 
-            <div id="pagamentoStatus" class="pagamento-status aguardando" role="status" aria-live="polite">
-              <span class="pagamento-status-icone" aria-hidden="true"></span>
+
+            <div
+              id="pagamentoStatus"
+              class="pagamento-status aguardando"
+              role="status"
+              aria-live="polite"
+            >
+
+              <span
+                class="pagamento-status-icone"
+                aria-hidden="true"
+              ></span>
+
               <div>
-                <strong id="pagamentoStatusTitulo">Aguardando confirmação</strong>
-                <span id="pagamentoStatusTexto">Após fazer o Pix, deixe esta aba aberta. Você pode voltar mais tarde: o status será atualizado automaticamente.</span>
+
+                <strong id="pagamentoStatusTitulo">
+                  Aguardando confirmação
+                </strong>
+
+                <span id="pagamentoStatusTexto">
+                  Após fazer o Pix, deixe esta aba aberta. Você pode voltar mais tarde: o status será atualizado automaticamente.
+                </span>
+
               </div>
+
             </div>
 
           </div>
@@ -798,13 +820,22 @@
 
             <div class="resumo-pedido">
 
-              <h4>Resumo do pedido</h4>
+              <h4>
+                Resumo do pedido
+              </h4>
 
               <ul id="resumoLista"></ul>
 
               <div class="resumo-total">
-                <span>Total a pagar</span>
-                <strong id="resumoTotal">R$ 0,00</strong>
+
+                <span>
+                  Total a pagar
+                </span>
+
+                <strong id="resumoTotal">
+                  R$ 0,00
+                </strong>
+
               </div>
 
             </div>
@@ -814,7 +845,9 @@
 
               <div id="qrcode"></div>
 
-              <span class="qr-legenda">Pix Copia e Cola</span>
+              <span class="qr-legenda">
+                Pix Copia e Cola
+              </span>
 
               <button
                 type="button"
@@ -837,6 +870,7 @@
           >
             Ticket disponível após a confirmação
           </button>
+
 
           <button
             type="button"
@@ -964,10 +998,14 @@
   >
 
     <svg viewBox="0 0 24 24" fill="currentColor">
+
       <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.87.5 3.62 1.44 5.14L2 22l5.13-1.53a9.87 9.87 0 0 0 4.91 1.3h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm5.8 14.06c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.12.11-1.8-.11-.42-.13-.96-.31-1.66-.6-2.92-1.26-4.83-4.18-4.98-4.38-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.58-.36.78-.36h.55c.18 0 .43-.06.66.5.27.65.9 2.24.98 2.4.08.16.13.35.02.56-.1.2-.16.33-.31.5-.15.18-.32.4-.46.54-.15.15-.31.31-.14.6.18.29.8 1.32 1.72 2.14 1.19 1.06 2.19 1.39 2.5 1.55.31.16.5.13.68-.06.19-.2.79-.92.99-1.24.2-.31.4-.26.68-.16.28.1 1.79.85 2.09 1 .31.15.51.23.59.36.08.13.08.75-.16 1.43Z"/>
+
     </svg>
 
-    <span>Falar no WhatsApp</span>
+    <span>
+      Falar no WhatsApp
+    </span>
 
   </a>
 
