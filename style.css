@@ -1480,12 +1480,12 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
 }
 .trailer-slot {
   position: relative;
-  margin-top: 28px;
   width: 100%;
   aspect-ratio: 16 / 9;
+  margin-top: 28px;
+  overflow: hidden;
   background: #120302;
   border-radius: 16px;
-  overflow: hidden;
   padding: 0;
 }
 
@@ -1496,15 +1496,20 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   width: 100%;
   height: 100%;
   border: 0;
+  margin: 0;
+  padding: 0;
   display: block;
 }
 
+/* Link/thumbnail do trailer */
 .trailer-slot a {
   position: absolute;
   inset: 0;
-  display: block;
   width: 100%;
   height: 100%;
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .trailer-slot a img {
@@ -1515,26 +1520,31 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   object-position: center;
 }
 
-/* PLAY EXATAMENTE NO CENTRO */
+/* Play centralizado */
 .trailer-slot a::after {
   content: "▶";
   position: absolute;
-  top: 50%;
   left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  
   width: 68px;
   height: 68px;
-  transform: translate(-50%, -50%);
+  
   display: grid;
   place-items: center;
+  
   padding-left: 4px;
   border-radius: 50%;
+  
   background: rgba(153, 1, 0, .92);
   color: #fff;
+  
   font-size: 27px;
   line-height: 1;
+  
   box-shadow: 0 8px 25px rgba(0, 0, 0, .35);
-  z-index: 10;
-  transition: transform .2s ease, background .2s ease;
+  z-index: 5;
 }
 
 .trailer-slot a:hover::after {
@@ -1542,14 +1552,20 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   background: var(--red-deep);
 }
 
-/* MOBILE */
+/* Tablets e celulares */
 @media (max-width: 680px) {
   .trailer-slot {
-    margin-top: 24px;
     width: 100%;
     aspect-ratio: 16 / 9;
+    height: auto;
     min-height: 0;
+    margin-top: 24px;
     border-radius: 13px;
+  }
+
+  .trailer-slot iframe {
+    width: 100%;
+    height: 100%;
   }
 
   .trailer-slot a::after {
@@ -1559,8 +1575,13 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   }
 }
 
+/* Celulares pequenos */
 @media (max-width: 420px) {
   .trailer-slot {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    min-height: 0;
     border-radius: 12px;
   }
 
@@ -1568,5 +1589,19 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
     width: 50px;
     height: 50px;
     font-size: 19px;
+  }
+}
+
+/* Celulares muito estreitos */
+@media (max-width: 340px) {
+  .trailer-slot {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .trailer-slot a::after {
+    width: 46px;
+    height: 46px;
+    font-size: 17px;
   }
 }
