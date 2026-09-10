@@ -1478,22 +1478,3 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   object-fit: cover;
   border-radius: inherit;
 }
-
-/* ---------- Trailer do YouTube ---------- */
-
-.trailer-slot {
-  margin-top: 28px;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-}
-
-.trailer-slot iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: inherit;
-}
