@@ -1479,32 +1479,104 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   border-radius: inherit;
 }
 .trailer-slot {
+  position: relative;
+  margin-top: 28px;
   width: 100%;
   aspect-ratio: 16 / 9;
-  height: auto;
+  background: #120302;
+  border-radius: 16px;
   overflow: hidden;
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
   padding: 0;
 }
 
-.trailer-slot iframe,
-.trailer-slot video {
+.trailer-slot iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.trailer-slot img,
+.trailer-slot a {
   width: 100%;
   height: 100%;
   display: block;
-  border: 0;
-  object-fit: cover;
 }
+
+.trailer-slot a {
+  position: relative;
+  overflow: hidden;
+}
+
+.trailer-slot a img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Botão de play exatamente no centro */
+.trailer-slot a::after {
+  content: "▶";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 4px;
+  border-radius: 50%;
+  background: rgba(153, 1, 0, .92);
+  color: #fff;
+  font-size: 27px;
+  line-height: 1;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, .35);
+  transition: transform .2s ease, background .2s ease;
+  z-index: 2;
+}
+
+.trailer-slot a:hover::after {
+  transform: translate(-50%, -50%) scale(1.08);
+  background: var(--red-deep);
+}
+
+/* Mobile */
 @media (max-width: 680px) {
   .trailer-slot {
+    margin-top: 24px;
     width: 100%;
     aspect-ratio: 16 / 9;
     min-height: 0;
+    border-radius: 13px;
   }
 
-  .trailer-slot iframe,
-  .trailer-slot video {
-    width: 100%;
-    height: 100%;
+  .trailer-slot a::after {
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 420px) {
+  .trailer-slot {
+    border-radius: 12px;
+  }
+
+  .trailer-slot a::after {
+    width: 50px;
+    height: 50px;
+    font-size: 19px;
   }
 }
