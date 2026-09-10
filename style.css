@@ -1486,56 +1486,46 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   background: #120302;
   border-radius: 16px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-  text-align: center;
   padding: 0;
 }
 
 .trailer-slot iframe {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border: 0;
   display: block;
 }
 
-.trailer-slot img,
 .trailer-slot a {
+  position: absolute;
+  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
-}
-
-.trailer-slot a {
-  position: relative;
-  overflow: hidden;
 }
 
 .trailer-slot a img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
   object-position: center;
 }
 
-/* Botão de play exatamente no centro */
+/* PLAY EXATAMENTE NO CENTRO */
 .trailer-slot a::after {
   content: "▶";
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   width: 68px;
   height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
   padding-left: 4px;
   border-radius: 50%;
   background: rgba(153, 1, 0, .92);
@@ -1543,8 +1533,8 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   font-size: 27px;
   line-height: 1;
   box-shadow: 0 8px 25px rgba(0, 0, 0, .35);
+  z-index: 10;
   transition: transform .2s ease, background .2s ease;
-  z-index: 2;
 }
 
 .trailer-slot a:hover::after {
@@ -1552,7 +1542,7 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
   background: var(--red-deep);
 }
 
-/* Mobile */
+/* MOBILE */
 @media (max-width: 680px) {
   .trailer-slot {
     margin-top: 24px;
