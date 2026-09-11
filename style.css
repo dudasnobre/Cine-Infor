@@ -67,7 +67,7 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
 .stat-chip strong { font-size: 16px; font-weight: 700; color: var(--ink); }
 
 .profile-body { margin-top: 40px; display: grid; grid-template-columns: 200px 1fr; gap: 40px; }
-.poster-slot { aspect-ratio: 2/3; background: linear-gradient(150deg, var(--cream-soft), #f0e2ca); border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; color: var(--muted); font-size: 12px; font-weight: 500; }
+.poster-slot { aspect-ratio: 2/3; background: linear-gradient(150deg, var(--cream-soft), #f0e2ca); border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; color: var(--muted); font-size: 12px; font-weight: 500; border-radius: 12px 12px 12px 12px;}
 .poster-slot svg { color: rgba(153,1,0,.4); width: 28px; height: 28px; }
 .credits { margin: 22px 0 0; display: flex; flex-direction: column; gap: 13px; }
 .credits div { display: flex; flex-direction: column; gap: 2px; }
@@ -1450,6 +1450,11 @@ h1, h2, h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -.02em;
 
 .btn-novo-pedido[hidden] {
   display: none;
+}
+#anabelle{
+  border: 1px solid;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.55);
 }
 
 @media (max-width: 680px) {
