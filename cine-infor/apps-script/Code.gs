@@ -150,22 +150,32 @@ function doPost(event) {
   } catch (error) {
     console.error(error && error.stack ? error.stack : String(error));
 
-    if (error && error.name === 'PublicError') {
-      return bridgeResponse_({
-        ok: false,
-        code: error.code,
-        error: error.message
-      }, requestId);
-    }
-
     const serviceUnavailable = isServiceUnavailableError_(error);
-    return bridgeResponse_({
+    const isPublicError = error && error.name === 'PublicError';
+    const payload = {
       ok: false,
-      code: serviceUnavailable ? 'SERVICE_UNAVAILABLE' : 'INTERNAL_ERROR',
-      error: serviceUnavailable
-        ? 'Servico temporariamente indisponivel. Tente novamente mais tarde ou retorne amanha.'
-        : 'Nao foi possivel concluir a operacao. Tente novamente mais tarde.'
-    }, requestId);
+      code: isPublicError
+        ? error.code
+        : (serviceUnavailable ? 'SERVICE_UNAVAILABLE' : 'INTERNAL_ERROR'),
+      error: isPublicError
+        ? error.message
+        : (serviceUnavailable
+          ? 'Servico temporariamente indisponivel. Tente novamente mais tarde ou retorne amanha.'
+          : 'Nao foi possivel concluir a operacao. Tente novamente mais tarde.')
+    };
+
+    try {
+      return bridgeResponse_(payload, requestId);
+    } catch (bridgeError) {
+      // Se chegou aqui, o proprio envelope de resposta nao pode ser montado -
+      // normalmente porque ALLOWED_ORIGINS esta ausente ou invalido, e sem uma
+      // origem valida nao ha como avisar o navegador via postMessage de qualquer
+      // forma. Registramos isso separadamente para o diagnostico ficar claro nas
+      // Execucoes, em vez de aparecer como um erro genérico do Apps Script.
+      console.error('Falha ao montar a resposta para o navegador (verifique ALLOWED_ORIGINS nas Propriedades do script): ' +
+        (bridgeError && bridgeError.stack ? bridgeError.stack : String(bridgeError)));
+      return jsonResponse_(payload);
+    }
   }
 }
 
@@ -1160,6 +1170,33 @@ function replaceProtection_(sheet, description, unprotectedRanges) {
   if (protection.canDomainEdit()) protection.setDomainEdit(false);
 }
 
+/** Execute no editor com a conta que vai operar os status na planilha. */
+function instalarGatilhoDaMinhaConta() {
+  const email = normalizeEmail_(Session.getActiveUser().getEmail());
+  if (!email || !isAdminEmail_(email)) {
+    throw new Error('Entre com a conta responsavel e inclua seu e-mail em ADMIN_EMAILS antes de executar.');
+  }
+
+  const spreadsheet = openConfiguredSpreadsheet_();
+  [
+    requireConfiguredSheet_(spreadsheet, CONFIG_.sheetName, ORDER_HEADERS_),
+    requireConfiguredSheet_(spreadsheet, CONFIG_.auditSheetName, AUDIT_HEADERS_)
+  ].forEach(function (sheet) {
+    [SpreadsheetApp.ProtectionType.SHEET, SpreadsheetApp.ProtectionType.RANGE].forEach(function (type) {
+      sheet.getProtections(type).forEach(function (protection) {
+        if (!protection.isWarningOnly() && !protection.canEdit()) {
+          throw new Error('A conta precisa de permissao nas protecoes da aba ' + sheet.getName() +
+            '. Peca ao proprietario para adiciona-la sem remover o acesso da conta que executa o site.');
+        }
+      });
+    });
+  });
+
+  installEditTrigger_(spreadsheet);
+  console.log('Gatilho instalado para ' + email + '. Teste uma alteracao pela mesma conta e confira a Auditoria.');
+  console.log('Gatilhos de outras contas devem ser removidos pelos respectivos criadores.');
+}
+
 function installEditTrigger_(spreadsheet) {
   ScriptApp.getProjectTriggers().forEach(function (trigger) {
     if (trigger.getHandlerFunction() === 'aoEditarStatusSeguro') {
@@ -1201,14 +1238,16 @@ function aoEditarStatusSeguro(event) {
     if (!actor || !isAdminEmail_(actor)) {
       restorePreviousValue_(range, previous);
       appendAudit_(event.source, range.getRow(), previous, next, actor || 'nao-identificado', 'NEGADO');
-      notifySpreadsheet_(event, 'Alteracao negada: conta nao autorizada.');
+      notifySpreadsheet_(event, actor
+        ? 'Alteracao negada: e-mail ausente de ADMIN_EMAILS.'
+        : 'Alteracao negada: o Google nao informou o e-mail de quem editou. Confira o gatilho com a conta responsavel.');
       return;
     }
 
     if (!isAllowedTransition_(previous, next)) {
       restorePreviousValue_(range, previous);
       appendAudit_(event.source, range.getRow(), previous, next, actor, 'TRANSICAO_INVALIDA');
-      notifySpreadsheet_(event, 'Transicao invalida. Use Aguardando > Pago > Utilizado.');
+      notifySpreadsheet_(event, 'Transicao invalida. Use somente Aguardando > Pago > Utilizado, uma etapa por vez.');
       return;
     }
 
@@ -1245,9 +1284,15 @@ function isAdminEmail_(email) {
 
 function eventUserEmail_(event) {
   try {
-    if (event.user && event.user.getEmail()) return normalizeEmail_(event.user.getEmail());
+    const email = event && event.user ? normalizeEmail_(event.user.getEmail()) : '';
+    if (email) return email;
   } catch (error) {
-    // Falha fechada abaixo.
+    // Tente a identidade ativa, que tambem pode estar indisponivel.
+  }
+  try {
+    return normalizeEmail_(Session.getActiveUser().getEmail());
+  } catch (error) {
+    // Nunca use getEffectiveUser(): ele identifica o dono do gatilho, nao o editor.
   }
   return '';
 }
