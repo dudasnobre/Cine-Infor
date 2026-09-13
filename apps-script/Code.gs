@@ -194,18 +194,22 @@ function dispatchBuyerAction_(action, payload, sessionToken) {
       }
     };
   }
+
   if (action === 'requestVerification') {
     return requestEmailVerification_(payload);
   }
+
   if (action === 'verifyEmail') {
     return verifyEmailCode_(payload);
   }
+
   if (action === 'createOrder') {
     const email = requireBuyerSession_(sessionToken);
     const order = validateOrderPayload_(payload);
     const pixConfig = getPixConfig_();
     const saved = saveOrder_(order, email);
     const pixPayload = createPixPayload_(saved.id, saved.totalCents, pixConfig);
+
     return {
       duplicate: saved.duplicate,
       order: {
@@ -223,12 +227,15 @@ function dispatchBuyerAction_(action, payload, sessionToken) {
       }
     };
   }
+
   if (action === 'getOrderStatus') {
     return { order: getOrderStatus_(payload) };
   }
+
   if (action === 'issueTicket') {
     return { ticket: issueTicket_(payload) };
   }
+
   throw new PublicError_('INVALID_ACTION', 'Operacao invalida.');
 }
 
@@ -239,14 +246,18 @@ function getPublicServiceStatus_() {
   const timeZone = Session.getScriptTimeZone() || 'America/Fortaleza';
   const day = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd');
   const hour = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd-HH');
+
   const globalState = normalizeVerificationRateState_(
     properties.getProperty('OTP_RATE_GLOBAL_V1'),
     day,
     hour
   );
+
   const remainingQuota = MailApp.getRemainingDailyQuota();
+
   const dailyLimitReached = globalState.dayCount >= limits.globalPerDay ||
     remainingQuota <= limits.emailQuotaReserve;
+
   const hourlyLimitReached = globalState.hourCount >= limits.globalPerHour;
 
   return {
@@ -260,23 +271,32 @@ function parseBridgeRequest_(event) {
     throw new PublicError_('INVALID_BODY', 'Requisicao ausente.');
   }
 
-  const action = typeof event.parameter.action === 'string' ? event.parameter.action : '';
+  const action = typeof event.parameter.action === 'string'
+    ? event.parameter.action
+    : '';
+
   const requestId = normalizeBridgeRequestId_(event.parameter.requestId);
+
   const sessionToken = typeof event.parameter.sessionToken === 'string'
     ? event.parameter.sessionToken.trim()
     : '';
-  const body = typeof event.parameter.payload === 'string' ? event.parameter.payload : '{}';
+
+  const body = typeof event.parameter.payload === 'string'
+    ? event.parameter.payload
+    : '{}';
 
   if (!body || body.length > CONFIG_.maxPayloadBytes) {
     throw new PublicError_('INVALID_BODY', 'Corpo da requisicao invalido.');
   }
 
   let payload;
+
   try {
     payload = JSON.parse(body);
   } catch (error) {
     throw new PublicError_('INVALID_JSON', 'JSON invalido.');
   }
+
   if (!isPlainObject_(payload)) {
     throw new PublicError_('INVALID_BODY', 'A requisicao deve ser um objeto JSON.');
   }
@@ -291,8 +311,12 @@ function parseBridgeRequest_(event) {
 
 function normalizeBridgeRequestId_(value) {
   if (typeof value !== 'string' || !/^[a-f0-9-]{16,64}$/i.test(value)) {
-    throw new PublicError_('INVALID_REQUEST_ID', 'Identificador da requisicao invalido.');
+    throw new PublicError_(
+      'INVALID_REQUEST_ID',
+      'Identificador da requisicao invalido.'
+    );
   }
+
   return value.toLowerCase();
 }
 
@@ -302,11 +326,13 @@ function parseRequestBody_(event) {
   }
 
   const body = event.postData.contents;
+
   if (!body || body.length > CONFIG_.maxPayloadBytes) {
     throw new PublicError_('INVALID_BODY', 'Corpo da requisicao invalido.');
   }
 
   let parsed;
+
   try {
     parsed = JSON.parse(body);
   } catch (error) {
@@ -314,7 +340,10 @@ function parseRequestBody_(event) {
   }
 
   if (!isPlainObject_(parsed)) {
-    throw new PublicError_('INVALID_BODY', 'O pedido deve ser um objeto JSON.');
+    throw new PublicError_(
+      'INVALID_BODY',
+      'O pedido deve ser um objeto JSON.'
+    );
   }
 
   return parsed;
@@ -327,7 +356,10 @@ function validateOrderPayload_(payload) {
 
   Object.keys(payload).forEach(function (field) {
     if (CONFIG_.acceptedPayloadFields.indexOf(field) === -1) {
-      throw new PublicError_('UNEXPECTED_FIELD', 'O pedido contem um campo nao permitido: ' + field + '.');
+      throw new PublicError_(
+        'UNEXPECTED_FIELD',
+        'O pedido contem um campo nao permitido: ' + field + '.'
+      );
     }
   });
 
@@ -349,7 +381,8 @@ function validateOrderPayload_(payload) {
   const requestId = normalizeRequestId_(payload.requestId);
 
   // O total enviado pelo navegador nunca e usado.
-  const totalCents = (ticketQuantity * CONFIG_.pricesInCents.ticket) +
+  const totalCents =
+    (ticketQuantity * CONFIG_.pricesInCents.ticket) +
     (popcornTypes.length * CONFIG_.pricesInCents.popcorn);
 
   return Object.freeze({
@@ -365,12 +398,16 @@ function validateOrderPayload_(payload) {
 
 function normalizeTicketQuantity_(value) {
   if (value === undefined) return 1;
-  if (!Number.isInteger(value) || value < 1 || value > CONFIG_.maxTickets) {
+
+  if (!Number.isInteger(value) ||
+      value < 1 ||
+      value > CONFIG_.maxTickets) {
     throw new PublicError_(
       'INVALID_TICKET_QUANTITY',
       'Escolha entre 1 e ' + CONFIG_.maxTickets + ' ingressos.'
     );
   }
+
   return value;
 }
 
@@ -380,7 +417,9 @@ function normalizeName_(value) {
   }
 
   const normalized = normalizeText_(value);
-  if (normalized.length < 3 || normalized.length > CONFIG_.maxNameLength) {
+
+  if (normalized.length < 3 ||
+      normalized.length > CONFIG_.maxNameLength) {
     throw new PublicError_('INVALID_NAME', 'Nome invalido.');
   }
 
@@ -398,6 +437,7 @@ function normalizeClass_(value) {
 
   const normalized = removeAccents_(normalizeText_(value));
   const index = CONFIG_.allowedClasses.indexOf(normalized);
+
   if (index === -1) {
     throw new PublicError_('INVALID_CLASS', 'Turma invalida.');
   }
@@ -409,15 +449,22 @@ function normalizePopcorn_(payload, wantsPopcorn) {
   let quantity = payload.quantidadePipoca;
   let types = payload.tiposPipoca;
 
-  if (payload.tiposPipoca !== undefined && payload.tipoPipoca !== undefined) {
-    throw new PublicError_('INVALID_POPCORN', 'Envie apenas um formato para os tipos de pipoca.');
+  if (payload.tiposPipoca !== undefined &&
+      payload.tipoPipoca !== undefined) {
+    throw new PublicError_(
+      'INVALID_POPCORN',
+      'Envie apenas um formato para os tipos de pipoca.'
+    );
   }
 
   if (types === undefined && typeof payload.tipoPipoca === 'string') {
     const legacy = normalizeText_(payload.tipoPipoca);
-    types = legacy === 'N/A' || legacy === '' ? [] : legacy.split(',').map(function (item) {
-      return normalizeText_(item);
-    });
+
+    types = legacy === 'N/A' || legacy === ''
+      ? []
+      : legacy.split(',').map(function (item) {
+          return normalizeText_(item);
+        });
   }
 
   if (types === undefined) {
@@ -425,7 +472,10 @@ function normalizePopcorn_(payload, wantsPopcorn) {
   }
 
   if (!Array.isArray(types)) {
-    throw new PublicError_('INVALID_POPCORN', 'Tipos de pipoca invalidos.');
+    throw new PublicError_(
+      'INVALID_POPCORN',
+      'Tipos de pipoca invalidos.'
+    );
   }
 
   if (quantity === undefined) {
@@ -433,28 +483,49 @@ function normalizePopcorn_(payload, wantsPopcorn) {
   }
 
   if (typeof quantity !== 'number' || !Number.isInteger(quantity)) {
-    throw new PublicError_('INVALID_POPCORN', 'Quantidade de pipoca invalida.');
+    throw new PublicError_(
+      'INVALID_POPCORN',
+      'Quantidade de pipoca invalida.'
+    );
   }
 
   if (!wantsPopcorn) {
     if (quantity !== 0 || types.length !== 0) {
-      throw new PublicError_('INVALID_POPCORN', 'Pedido de pipoca inconsistente.');
+      throw new PublicError_(
+        'INVALID_POPCORN',
+        'Pedido de pipoca inconsistente.'
+      );
     }
+
     return [];
   }
 
-  if (quantity < 1 || quantity > CONFIG_.maxPopcorn || types.length !== quantity) {
-    throw new PublicError_('INVALID_POPCORN', 'Quantidade de pipoca invalida.');
+  if (quantity < 1 ||
+      quantity > CONFIG_.maxPopcorn ||
+      types.length !== quantity) {
+    throw new PublicError_(
+      'INVALID_POPCORN',
+      'Quantidade de pipoca invalida.'
+    );
   }
 
   return types.map(function (type) {
     if (typeof type !== 'string') {
-      throw new PublicError_('INVALID_POPCORN', 'Tipo de pipoca invalido.');
+      throw new PublicError_(
+        'INVALID_POPCORN',
+        'Tipo de pipoca invalido.'
+      );
     }
+
     const normalized = normalizeText_(type);
+
     if (CONFIG_.allowedPopcornTypes.indexOf(normalized) === -1) {
-      throw new PublicError_('INVALID_POPCORN', 'Tipo de pipoca invalido.');
+      throw new PublicError_(
+        'INVALID_POPCORN',
+        'Tipo de pipoca invalido.'
+      );
     }
+
     return normalized;
   });
 }
@@ -463,21 +534,32 @@ function normalizeRequestId_(value) {
   if (value === undefined || value === null || value === '') {
     return '';
   }
-  if (typeof value !== 'string' || !/^[a-f0-9-]{16,64}$/i.test(value)) {
-    throw new PublicError_('INVALID_REQUEST_ID', 'Identificador da requisicao invalido.');
+
+  if (typeof value !== 'string' ||
+      !/^[a-f0-9-]{16,64}$/i.test(value)) {
+    throw new PublicError_(
+      'INVALID_REQUEST_ID',
+      'Identificador da requisicao invalido.'
+    );
   }
+
   return value.toLowerCase();
 }
 
 function requireBoolean_(value, field) {
   if (typeof value !== 'boolean') {
-    throw new PublicError_('INVALID_FIELD', 'Campo invalido: ' + field + '.');
+    throw new PublicError_(
+      'INVALID_FIELD',
+      'Campo invalido: ' + field + '.'
+    );
   }
+
   return value;
 }
 
 function requestEmailVerification_(payload) {
   assertOnlyFields_(payload, ['email']);
+
   const email = requireInstitutionalEmail_(payload.email);
   const cache = CacheService.getScriptCache();
   const emailKey = sha256Hex_(email);
@@ -485,19 +567,34 @@ function requestEmailVerification_(payload) {
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
+
   try {
     if (cache.get(cooldownKey)) {
-      throw new PublicError_('TOO_MANY_REQUESTS', 'Aguarde um minuto antes de pedir outro codigo.');
+      throw new PublicError_(
+        'TOO_MANY_REQUESTS',
+        'Aguarde um minuto antes de pedir outro codigo.'
+      );
     }
 
-    const rateReservation = requireVerificationEmailCapacity_(email, new Date());
+    const rateReservation =
+      requireVerificationEmailCapacity_(email, new Date());
 
     const code = createVerificationCode_();
-    cache.put('otp:' + emailKey, JSON.stringify({
-      hash: hmacHex_(email + '|' + code),
-      attempts: 0
-    }), CONFIG_.verificationCodeTtlSeconds);
-    cache.put(cooldownKey, '1', CONFIG_.verificationCooldownSeconds);
+
+    cache.put(
+      'otp:' + emailKey,
+      JSON.stringify({
+        hash: hmacHex_(email + '|' + code),
+        attempts: 0
+      }),
+      CONFIG_.verificationCodeTtlSeconds
+    );
+
+    cache.put(
+      cooldownKey,
+      '1',
+      CONFIG_.verificationCooldownSeconds
+    );
 
     try {
       MailApp.sendEmail({
@@ -507,9 +604,12 @@ function requestEmailVerification_(payload) {
         body: 'Seu codigo de acesso ao Cine Infor e: ' + code +
           '\n\nEle expira em 10 minutos. Se voce nao pediu este codigo, ignore a mensagem.',
         htmlBody: '<p>Seu codigo de acesso ao Cine Infor e:</p>' +
-          '<p style="font-size:26px;font-weight:bold;letter-spacing:4px">' + code + '</p>' +
+          '<p style="font-size:26px;font-weight:bold;letter-spacing:4px">' +
+          code +
+          '</p>' +
           '<p>Ele expira em 10 minutos. Se voce nao pediu este codigo, ignore a mensagem.</p>'
       });
+
       recordVerificationEmailSent_(rateReservation);
     } catch (error) {
       cache.remove('otp:' + emailKey);
@@ -528,46 +628,81 @@ function requestEmailVerification_(payload) {
 
 function verifyEmailCode_(payload) {
   assertOnlyFields_(payload, ['email', 'code']);
+
   const email = requireInstitutionalEmail_(payload.email);
-  const code = typeof payload.code === 'string' ? payload.code.replace(/\D/g, '') : '';
+  const code = typeof payload.code === 'string'
+    ? payload.code.replace(/\D/g, '')
+    : '';
+
   if (!/^\d{6}$/.test(code)) {
-    throw new PublicError_('INVALID_CODE', 'Digite o codigo de 6 numeros.');
+    throw new PublicError_(
+      'INVALID_CODE',
+      'Digite o codigo de 6 numeros.'
+    );
   }
 
   const cache = CacheService.getScriptCache();
   const emailKey = sha256Hex_(email);
   const otpKey = 'otp:' + emailKey;
+
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
 
   try {
     const cached = cache.get(otpKey);
+
     if (!cached) {
-      throw new PublicError_('CODE_EXPIRED', 'O codigo expirou. Solicite um novo.');
+      throw new PublicError_(
+        'CODE_EXPIRED',
+        'O codigo expirou. Solicite um novo.'
+      );
     }
 
     let verification;
+
     try {
       verification = JSON.parse(cached);
     } catch (error) {
       cache.remove(otpKey);
-      throw new PublicError_('CODE_EXPIRED', 'O codigo expirou. Solicite um novo.');
+
+      throw new PublicError_(
+        'CODE_EXPIRED',
+        'O codigo expirou. Solicite um novo.'
+      );
     }
 
     const expected = String(verification.hash || '');
     const received = hmacHex_(email + '|' + code);
+
     if (!constantTimeEquals_(expected, received)) {
-      verification.attempts = Number(verification.attempts || 0) + 1;
+      verification.attempts =
+        Number(verification.attempts || 0) + 1;
+
       if (verification.attempts >= CONFIG_.maxVerificationAttempts) {
         cache.remove(otpKey);
-        throw new PublicError_('CODE_BLOCKED', 'Muitas tentativas. Solicite um novo codigo.');
+
+        throw new PublicError_(
+          'CODE_BLOCKED',
+          'Muitas tentativas. Solicite um novo codigo.'
+        );
       }
-      cache.put(otpKey, JSON.stringify(verification), CONFIG_.verificationCodeTtlSeconds);
-      throw new PublicError_('INVALID_CODE', 'Codigo incorreto.');
+
+      cache.put(
+        otpKey,
+        JSON.stringify(verification),
+        CONFIG_.verificationCodeTtlSeconds
+      );
+
+      throw new PublicError_(
+        'INVALID_CODE',
+        'Codigo incorreto.'
+      );
     }
 
     cache.remove(otpKey);
+
     const sessionToken = createOpaqueToken_();
+
     cache.put(
       'buyer-session:' + sha256Hex_(sessionToken),
       email,
@@ -589,19 +724,47 @@ function requireVerificationEmailCapacity_(email, now) {
   const properties = PropertiesService.getScriptProperties();
   const limits = getVerificationLimits_(properties);
   const timeZone = Session.getScriptTimeZone() || 'America/Fortaleza';
-  const day = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd');
-  const hour = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd-HH');
+
+  const day = Utilities.formatDate(
+    now,
+    timeZone,
+    'yyyy-MM-dd'
+  );
+
+  const hour = Utilities.formatDate(
+    now,
+    timeZone,
+    'yyyy-MM-dd-HH'
+  );
+
   const globalKey = 'OTP_RATE_GLOBAL_V1';
-  const emailKey = 'OTP_RATE_EMAIL_V1_' + sha256Hex_(email).substring(0, 24);
-  const globalState = normalizeVerificationRateState_(properties.getProperty(globalKey), day, hour);
-  const emailState = normalizeVerificationRateState_(properties.getProperty(emailKey), day, hour);
+  const emailKey =
+    'OTP_RATE_EMAIL_V1_' +
+    sha256Hex_(email).substring(0, 24);
+
+  const globalState =
+    normalizeVerificationRateState_(
+      properties.getProperty(globalKey),
+      day,
+      hour
+    );
+
+  const emailState =
+    normalizeVerificationRateState_(
+      properties.getProperty(emailKey),
+      day,
+      hour
+    );
+
   const remainingQuota = MailApp.getRemainingDailyQuota();
 
-  if (globalState.dayCount >= limits.globalPerDay ||
-      globalState.hourCount >= limits.globalPerHour ||
-      emailState.dayCount >= limits.perEmailPerDay ||
-      emailState.hourCount >= limits.perEmailPerHour ||
-      remainingQuota <= limits.emailQuotaReserve) {
+  if (
+    globalState.dayCount >= limits.globalPerDay ||
+    globalState.hourCount >= limits.globalPerHour ||
+    emailState.dayCount >= limits.perEmailPerDay ||
+    emailState.hourCount >= limits.perEmailPerHour ||
+    remainingQuota <= limits.emailQuotaReserve
+  ) {
     throw new PublicError_(
       'EMAIL_LIMIT_REACHED',
       remainingQuota <= limits.emailQuotaReserve
@@ -622,18 +785,26 @@ function requireVerificationEmailCapacity_(email, now) {
 function recordVerificationEmailSent_(reservation) {
   reservation.globalState.dayCount += 1;
   reservation.globalState.hourCount += 1;
+
   reservation.emailState.dayCount += 1;
   reservation.emailState.hourCount += 1;
+
   reservation.properties.setProperties((function () {
     const values = {};
-    values[reservation.globalKey] = JSON.stringify(reservation.globalState);
-    values[reservation.emailKey] = JSON.stringify(reservation.emailState);
+
+    values[reservation.globalKey] =
+      JSON.stringify(reservation.globalState);
+
+    values[reservation.emailKey] =
+      JSON.stringify(reservation.emailState);
+
     return values;
   }()), false);
 }
 
 function normalizeVerificationRateState_(raw, day, hour) {
   let state = {};
+
   try {
     state = raw ? JSON.parse(raw) : {};
   } catch (error) {
@@ -642,11 +813,16 @@ function normalizeVerificationRateState_(raw, day, hour) {
 
   const sameDay = state.day === day;
   const sameHour = sameDay && state.hour === hour;
+
   return {
     day: day,
-    dayCount: sameDay ? Math.max(0, Number(state.dayCount) || 0) : 0,
+    dayCount: sameDay
+      ? Math.max(0, Number(state.dayCount) || 0)
+      : 0,
     hour: hour,
-    hourCount: sameHour ? Math.max(0, Number(state.hourCount) || 0) : 0
+    hourCount: sameHour
+      ? Math.max(0, Number(state.hourCount) || 0)
+      : 0
   };
 }
 
@@ -657,21 +833,25 @@ function getVerificationLimits_(properties) {
       'MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_HOUR',
       CONFIG_.verificationLimits.perEmailPerHour
     ),
+
     perEmailPerDay: positiveIntegerProperty_(
       properties,
       'MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_DAY',
       CONFIG_.verificationLimits.perEmailPerDay
     ),
+
     globalPerHour: positiveIntegerProperty_(
       properties,
       'MAX_VERIFICATION_EMAILS_PER_HOUR',
       CONFIG_.verificationLimits.globalPerHour
     ),
+
     globalPerDay: positiveIntegerProperty_(
       properties,
       'MAX_VERIFICATION_EMAILS_PER_DAY',
       CONFIG_.verificationLimits.globalPerDay
     ),
+
     emailQuotaReserve: nonNegativeIntegerProperty_(
       properties,
       'MIN_REMAINING_EMAIL_QUOTA',
@@ -682,101 +862,188 @@ function getVerificationLimits_(properties) {
 
 function positiveIntegerProperty_(properties, name, fallback) {
   const value = Number(properties.getProperty(name));
-  return Number.isInteger(value) && value > 0 ? value : fallback;
+
+  return Number.isInteger(value) && value > 0
+    ? value
+    : fallback;
 }
 
 function nonNegativeIntegerProperty_(properties, name, fallback) {
   const raw = properties.getProperty(name);
-  if (raw === null || raw === '') return fallback;
+
+  if (raw === null || raw === '') {
+    return fallback;
+  }
+
   const value = Number(raw);
-  return Number.isInteger(value) && value >= 0 ? value : fallback;
+
+  return Number.isInteger(value) && value >= 0
+    ? value
+    : fallback;
 }
 
 function requireBuyerSession_(sessionToken) {
-  if (typeof sessionToken !== 'string' || !/^[a-f0-9]{64}$/i.test(sessionToken)) {
-    throw new PublicError_('AUTH_REQUIRED', 'Confirme seu e-mail institucional novamente.');
+  if (
+    typeof sessionToken !== 'string' ||
+    !/^[a-f0-9]{64}$/i.test(sessionToken)
+  ) {
+    throw new PublicError_(
+      'AUTH_REQUIRED',
+      'Confirme seu e-mail institucional novamente.'
+    );
   }
+
   const email = CacheService.getScriptCache().get(
-    'buyer-session:' + sha256Hex_(sessionToken.toLowerCase())
+    'buyer-session:' +
+    sha256Hex_(sessionToken.toLowerCase())
   );
+
   if (!email) {
-    throw new PublicError_('SESSION_EXPIRED', 'Sua confirmacao expirou. Confirme o e-mail novamente.');
+    throw new PublicError_(
+      'SESSION_EXPIRED',
+      'Sua confirmacao expirou. Confirme o e-mail novamente.'
+    );
   }
+
   return requireInstitutionalEmail_(email);
 }
 
 function requireInstitutionalEmail_(value) {
   const properties = PropertiesService.getScriptProperties();
-  const domain = normalizeDomain_(properties.getProperty('INSTITUTIONAL_DOMAIN'));
+
+  const domain = normalizeDomain_(
+    properties.getProperty('INSTITUTIONAL_DOMAIN')
+  );
+
   if (!domain) {
     throw new Error('INSTITUTIONAL_DOMAIN nao configurado.');
   }
+
   const email = normalizeEmail_(value);
+
   if (!isInstitutionalEmail_(email, domain)) {
-    throw new PublicError_('ACCESS_DENIED', 'Use a conta institucional autorizada.');
+    throw new PublicError_(
+      'ACCESS_DENIED',
+      'Use a conta institucional autorizada.'
+    );
   }
+
   return email;
 }
 
 function createVerificationCode_() {
-  const hex = sha256Hex_(Utilities.getUuid() + '|' + new Date().getTime());
-  return String(parseInt(hex.substring(0, 12), 16) % 1000000).padStart(6, '0');
+  const hex = sha256Hex_(
+    Utilities.getUuid() + '|' + new Date().getTime()
+  );
+
+  return String(
+    parseInt(hex.substring(0, 12), 16) % 1000000
+  ).padStart(6, '0');
 }
 
 function createOpaqueToken_() {
-  return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '').toLowerCase();
+  return (
+    Utilities.getUuid() +
+    Utilities.getUuid()
+  ).replace(/-/g, '').toLowerCase();
 }
 
 function getAuthSecret_() {
-  const secret = PropertiesService.getScriptProperties().getProperty('AUTH_SECRET');
+  const secret =
+    PropertiesService.getScriptProperties()
+      .getProperty('AUTH_SECRET');
+
   if (!secret || secret.length < 32) {
-    throw new Error('AUTH_SECRET nao configurado. Execute configurarProjeto().');
+    throw new Error(
+      'AUTH_SECRET nao configurado. Execute configurarProjeto().'
+    );
   }
+
   return secret;
 }
 
 function hmacHex_(value) {
-  const bytes = Utilities.computeHmacSha256Signature(value, getAuthSecret_());
+  const bytes =
+    Utilities.computeHmacSha256Signature(
+      value,
+      getAuthSecret_()
+    );
+
   return bytesToHex_(bytes);
 }
 
 function bytesToHex_(bytes) {
   return bytes.map(function (byte) {
-    return ((byte < 0 ? byte + 256 : byte).toString(16)).padStart(2, '0');
+    return (
+      (byte < 0 ? byte + 256 : byte)
+        .toString(16)
+    ).padStart(2, '0');
   }).join('');
 }
 
 function constantTimeEquals_(left, right) {
-  if (typeof left !== 'string' || typeof right !== 'string' || left.length !== right.length) {
+  if (
+    typeof left !== 'string' ||
+    typeof right !== 'string' ||
+    left.length !== right.length
+  ) {
     return false;
   }
+
   let difference = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+
+  for (
+    let index = 0;
+    index < left.length;
+    index += 1
+  ) {
+    difference |=
+      left.charCodeAt(index) ^
+      right.charCodeAt(index);
   }
+
   return difference === 0;
 }
 
 function assertOnlyFields_(payload, allowedFields) {
   if (!isPlainObject_(payload)) {
-    throw new PublicError_('INVALID_BODY', 'Dados invalidos.');
+    throw new PublicError_(
+      'INVALID_BODY',
+      'Dados invalidos.'
+    );
   }
+
   Object.keys(payload).forEach(function (field) {
     if (allowedFields.indexOf(field) === -1) {
-      throw new PublicError_('UNEXPECTED_FIELD', 'A requisicao contem um campo nao permitido: ' + field + '.');
+      throw new PublicError_(
+        'UNEXPECTED_FIELD',
+        'A requisicao contem um campo nao permitido: ' +
+        field +
+        '.'
+      );
     }
   });
 }
 
 function saveOrder_(order, email) {
   const spreadsheet = openConfiguredSpreadsheet_();
-  const sheet = requireConfiguredSheet_(spreadsheet, CONFIG_.sheetName, ORDER_HEADERS_);
+
+  const sheet = requireConfiguredSheet_(
+    spreadsheet,
+    CONFIG_.sheetName,
+    ORDER_HEADERS_
+  );
+
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
 
   try {
-    const requestKey = buildRequestKey_(order, email, Date.now());
-    const existing = findOrderByRequestKey_(sheet, requestKey);
+    const requestKey =
+      buildRequestKey_(order, email, Date.now());
+
+    const existing =
+      findOrderByRequestKey_(sheet, requestKey);
+
     if (existing) {
       existing.statusToken = order.requestId;
       return existing;
@@ -786,7 +1053,10 @@ function saveOrder_(order, email) {
 
     const now = new Date();
     const orderId = createOrderId_();
-    const statusToken = order.requestId || createOpaqueToken_();
+
+    const statusToken =
+      order.requestId || createOpaqueToken_();
+
     const row = [
       spreadsheetSafeText_(orderId),
       now,
@@ -811,11 +1081,25 @@ function saveOrder_(order, email) {
     ];
 
     sheet.appendRow(row);
+
     const rowNumber = sheet.getLastRow();
-    sheet.getRange(rowNumber, COL_.createdAt).setNumberFormat('dd/MM/yyyy HH:mm:ss');
-    sheet.getRange(rowNumber, COL_.paidAt, 1, 1).setNumberFormat('dd/MM/yyyy HH:mm:ss');
-    sheet.getRange(rowNumber, COL_.usedAt, 1, 1).setNumberFormat('dd/MM/yyyy HH:mm:ss');
-    sheet.getRange(rowNumber, COL_.updatedAt, 1, 1).setNumberFormat('dd/MM/yyyy HH:mm:ss');
+
+    sheet
+      .getRange(rowNumber, COL_.createdAt)
+      .setNumberFormat('dd/MM/yyyy HH:mm:ss');
+
+    sheet
+      .getRange(rowNumber, COL_.paidAt, 1, 1)
+      .setNumberFormat('dd/MM/yyyy HH:mm:ss');
+
+    sheet
+      .getRange(rowNumber, COL_.usedAt, 1, 1)
+      .setNumberFormat('dd/MM/yyyy HH:mm:ss');
+
+    sheet
+      .getRange(rowNumber, COL_.updatedAt, 1, 1)
+      .setNumberFormat('dd/MM/yyyy HH:mm:ss');
+
     SpreadsheetApp.flush();
 
     return {
@@ -833,31 +1117,54 @@ function saveOrder_(order, email) {
 }
 
 function enforceRateLimit_(sheet, email, now) {
-  const configured = Number(PropertiesService.getScriptProperties().getProperty('MAX_ORDERS_PER_EMAIL_PER_HOUR'));
-  const limit = Number.isInteger(configured) && configured > 0
-    ? configured
-    : CONFIG_.defaultOrdersPerHour;
+  const configured =
+    Number(
+      PropertiesService.getScriptProperties()
+        .getProperty('MAX_ORDERS_PER_EMAIL_PER_HOUR')
+    );
+
+  const limit =
+    Number.isInteger(configured) && configured > 0
+      ? configured
+      : CONFIG_.defaultOrdersPerHour;
+
   const lastRow = sheet.getLastRow();
+
   if (lastRow < 2) return;
 
-  const values = sheet.getRange(2, COL_.createdAt, lastRow - 1, 2).getValues();
-  const cutoff = now.getTime() - (60 * 60 * 1000);
+  const values = sheet
+    .getRange(2, COL_.createdAt, lastRow - 1, 2)
+    .getValues();
+
+  const cutoff =
+    now.getTime() - (60 * 60 * 1000);
+
   let count = 0;
+
   values.forEach(function (row) {
     const createdAt = row[0];
     const storedEmail = normalizeEmail_(row[1]);
-    if (storedEmail === email && createdAt instanceof Date && createdAt.getTime() >= cutoff) {
+
+    if (
+      storedEmail === email &&
+      createdAt instanceof Date &&
+      createdAt.getTime() >= cutoff
+    ) {
       count += 1;
     }
   });
 
   if (count >= limit) {
-    throw new PublicError_('RATE_LIMITED', 'Limite de pedidos atingido. Procure um organizador.');
+    throw new PublicError_(
+      'RATE_LIMITED',
+      'Limite de pedidos atingido. Procure um organizador.'
+    );
   }
 }
 
 function findOrderByRequestKey_(sheet, requestKey) {
   const lastRow = sheet.getLastRow();
+
   if (lastRow < 2) return null;
 
   const found = sheet
@@ -868,44 +1175,88 @@ function findOrderByRequestKey_(sheet, requestKey) {
 
   if (!found) return null;
 
-  const row = sheet.getRange(found.getRow(), 1, 1, ORDER_HEADERS_.length).getValues()[0];
+  const row = sheet
+    .getRange(found.getRow(), 1, 1, ORDER_HEADERS_.length)
+    .getValues()[0];
+
   return {
     duplicate: true,
     id: String(row[COL_.id - 1]),
-    createdAt: row[COL_.createdAt - 1] instanceof Date ? row[COL_.createdAt - 1] : new Date(row[COL_.createdAt - 1]),
+    createdAt:
+      row[COL_.createdAt - 1] instanceof Date
+        ? row[COL_.createdAt - 1]
+        : new Date(row[COL_.createdAt - 1]),
     totalCents: Number(row[COL_.totalCents - 1]),
-    ticketQuantity: Number(row[COL_.ticketQuantity - 1]) || 1,
+    ticketQuantity:
+      Number(row[COL_.ticketQuantity - 1]) || 1,
     status: String(row[COL_.status - 1])
   };
 }
 
 function getOrderStatus_(payload) {
-  const record = requireAuthorizedOrderRecord_(payload);
+  const record =
+    requireAuthorizedOrderRecord_(payload);
+
   const row = record.row;
   const paidAt = row[COL_.paidAt - 1];
+
   return {
     id: String(row[COL_.id - 1]),
     status: getConfirmedStatusFromRow_(row),
-    paidAt: paidAt instanceof Date ? paidAt.toISOString() : null,
-    updatedAt: row[COL_.updatedAt - 1] instanceof Date
-      ? row[COL_.updatedAt - 1].toISOString()
-      : null
+    paidAt:
+      paidAt instanceof Date
+        ? paidAt.toISOString()
+        : null,
+    updatedAt:
+      row[COL_.updatedAt - 1] instanceof Date
+        ? row[COL_.updatedAt - 1].toISOString()
+        : null
   };
 }
 
 function requireAuthorizedOrderRecord_(payload) {
-  assertOnlyFields_(payload, ['orderId', 'statusToken']);
-  const orderId = typeof payload.orderId === 'string' ? payload.orderId.trim().toUpperCase() : '';
-  const statusToken = typeof payload.statusToken === 'string' ? payload.statusToken.trim().toLowerCase() : '';
-  if (!/^CI-[A-F0-9]{32}$/.test(orderId) || !/^[a-f0-9-]{16,64}$/.test(statusToken)) {
-    throw new PublicError_('ORDER_NOT_FOUND', 'Pedido nao encontrado.');
+  assertOnlyFields_(payload, [
+    'orderId',
+    'statusToken'
+  ]);
+
+  const orderId =
+    typeof payload.orderId === 'string'
+      ? payload.orderId.trim().toUpperCase()
+      : '';
+
+  const statusToken =
+    typeof payload.statusToken === 'string'
+      ? payload.statusToken.trim().toLowerCase()
+      : '';
+
+  if (
+    !/^CI-[A-F0-9]{32}$/.test(orderId) ||
+    !/^[a-f0-9-]{16,64}$/.test(statusToken)
+  ) {
+    throw new PublicError_(
+      'ORDER_NOT_FOUND',
+      'Pedido nao encontrado.'
+    );
   }
 
-  const spreadsheet = openConfiguredSpreadsheet_();
-  const sheet = requireConfiguredSheet_(spreadsheet, CONFIG_.sheetName, ORDER_HEADERS_);
+  const spreadsheet =
+    openConfiguredSpreadsheet_();
+
+  const sheet =
+    requireConfiguredSheet_(
+      spreadsheet,
+      CONFIG_.sheetName,
+      ORDER_HEADERS_
+    );
+
   const lastRow = sheet.getLastRow();
+
   if (lastRow < 2) {
-    throw new PublicError_('ORDER_NOT_FOUND', 'Pedido nao encontrado.');
+    throw new PublicError_(
+      'ORDER_NOT_FOUND',
+      'Pedido nao encontrado.'
+    );
   }
 
   const found = sheet
@@ -913,14 +1264,31 @@ function requireAuthorizedOrderRecord_(payload) {
     .createTextFinder(orderId)
     .matchEntireCell(true)
     .findNext();
+
   if (!found) {
-    throw new PublicError_('ORDER_NOT_FOUND', 'Pedido nao encontrado.');
+    throw new PublicError_(
+      'ORDER_NOT_FOUND',
+      'Pedido nao encontrado.'
+    );
   }
 
-  const row = sheet.getRange(found.getRow(), 1, 1, ORDER_HEADERS_.length).getValues()[0];
-  const expectedHash = String(row[COL_.statusTokenHash - 1] || '');
-  if (!constantTimeEquals_(expectedHash, hmacHex_(statusToken))) {
-    throw new PublicError_('ORDER_NOT_FOUND', 'Pedido nao encontrado.');
+  const row = sheet
+    .getRange(found.getRow(), 1, 1, ORDER_HEADERS_.length)
+    .getValues()[0];
+
+  const expectedHash =
+    String(row[COL_.statusTokenHash - 1] || '');
+
+  if (
+    !constantTimeEquals_(
+      expectedHash,
+      hmacHex_(statusToken)
+    )
+  ) {
+    throw new PublicError_(
+      'ORDER_NOT_FOUND',
+      'Pedido nao encontrado.'
+    );
   }
 
   return {
@@ -931,7 +1299,10 @@ function requireAuthorizedOrderRecord_(payload) {
 }
 
 function getConfirmedStatusFromRow_(row) {
-  return String(row[COL_.confirmedStatus - 1] || row[COL_.status - 1]);
+  return String(
+    row[COL_.confirmedStatus - 1] ||
+    row[COL_.status - 1]
+  );
 }
 
 function issueTicket_(payload) {
@@ -939,39 +1310,84 @@ function issueTicket_(payload) {
   lock.waitLock(10000);
 
   try {
-    const record = requireAuthorizedOrderRecord_(payload);
+    const record =
+      requireAuthorizedOrderRecord_(payload);
+
     const row = record.row;
-    const status = getConfirmedStatusFromRow_(row);
+    const status =
+      getConfirmedStatusFromRow_(row);
+
     if (status !== CONFIG_.status.paid) {
       if (status === CONFIG_.status.used) {
-        throw new PublicError_('TICKET_ALREADY_USED', 'Este ticket ja foi utilizado.');
+        throw new PublicError_(
+          'TICKET_ALREADY_USED',
+          'Este ticket ja foi utilizado.'
+        );
       }
-      throw new PublicError_('PAYMENT_NOT_CONFIRMED', 'O pagamento ainda nao foi confirmado.');
+
+      throw new PublicError_(
+        'PAYMENT_NOT_CONFIRMED',
+        'O pagamento ainda nao foi confirmado.'
+      );
     }
 
-    const orderId = String(row[COL_.id - 1]);
-    const validationCode = createTicketValidationCode_(orderId);
-    const storedCode = String(row[COL_.ticketValidationCode - 1] || '');
-    if (storedCode && !constantTimeEquals_(storedCode, validationCode)) {
-      throw new Error('Codigo de validacao do ticket inconsistente para ' + orderId + '.');
+    const orderId =
+      String(row[COL_.id - 1]);
+
+    const validationCode =
+      createTicketValidationCode_(orderId);
+
+    const storedCode =
+      String(row[COL_.ticketValidationCode - 1] || '');
+
+    if (
+      storedCode &&
+      !constantTimeEquals_(
+        storedCode,
+        validationCode
+      )
+    ) {
+      throw new Error(
+        'Codigo de validacao do ticket inconsistente para ' +
+        orderId +
+        '.'
+      );
     }
+
     if (!storedCode) {
       record.sheet
-        .getRange(record.rowNumber, COL_.ticketValidationCode)
+        .getRange(
+          record.rowNumber,
+          COL_.ticketValidationCode
+        )
         .setValue(validationCode);
+
       SpreadsheetApp.flush();
     }
 
-    const fileName = 'ticket-cineinfor-' + orderId + '.pdf';
-    const pdf = HtmlService
-      .createHtmlOutput(createTicketHtml_(row, validationCode, new Date()))
-      .getAs('application/pdf')
-      .setName(fileName);
+    const fileName =
+      'ticket-cineinfor-' +
+      orderId +
+      '.pdf';
+
+    const pdf =
+      HtmlService
+        .createHtmlOutput(
+          createTicketHtml_(
+            row,
+            validationCode,
+            new Date()
+          )
+        )
+        .getAs('application/pdf')
+        .setName(fileName);
 
     return {
       fileName: fileName,
       mimeType: 'application/pdf',
-      base64: Utilities.base64Encode(pdf.getBytes()),
+      base64: Utilities.base64Encode(
+        pdf.getBytes()
+      ),
       validationCode: validationCode
     };
   } finally {
@@ -980,25 +1396,63 @@ function issueTicket_(payload) {
 }
 
 function createTicketValidationCode_(orderId) {
-  const raw = hmacHex_('ticket-v1|' + orderId).substring(0, 16).toUpperCase();
+  const raw =
+    hmacHex_(
+      'ticket-v1|' + orderId
+    ).substring(0, 16).toUpperCase();
+
   return raw.match(/.{1,4}/g).join('-');
 }
 
 function createTicketHtml_(row, validationCode, issuedAt) {
-  const ticketQuantity = Number(row[COL_.ticketQuantity - 1]) || 1;
-  const popcornQuantity = Number(row[COL_.popcornQuantity - 1]) || 0;
-  const popcornTypes = String(row[COL_.popcornTypes - 1] || '');
-  const items = [ticketQuantity + (ticketQuantity === 1 ? ' ingresso' : ' ingressos')];
+  const ticketQuantity =
+    Number(row[COL_.ticketQuantity - 1]) || 1;
+
+  const popcornQuantity =
+    Number(row[COL_.popcornQuantity - 1]) || 0;
+
+  const popcornTypes =
+    String(row[COL_.popcornTypes - 1] || '');
+
+  const items = [
+    ticketQuantity +
+    (ticketQuantity === 1
+      ? ' ingresso'
+      : ' ingressos')
+  ];
+
   if (popcornQuantity > 0) {
-    items.push(popcornQuantity + ' pipoca(s)' + (popcornTypes ? ' (' + popcornTypes + ')' : ''));
+    items.push(
+      popcornQuantity +
+      ' pipoca(s)' +
+      (popcornTypes
+        ? ' (' + popcornTypes + ')'
+        : '')
+    );
   }
 
-  const timeZone = Session.getScriptTimeZone() || 'America/Fortaleza';
-  const issuedText = Utilities.formatDate(issuedAt, timeZone, 'dd/MM/yyyy HH:mm:ss');
-  const paidAt = row[COL_.paidAt - 1];
-  const paidText = paidAt instanceof Date
-    ? Utilities.formatDate(paidAt, timeZone, 'dd/MM/yyyy HH:mm:ss')
-    : 'Confirmado';
+  const timeZone =
+    Session.getScriptTimeZone() ||
+    'America/Fortaleza';
+
+  const issuedText =
+    Utilities.formatDate(
+      issuedAt,
+      timeZone,
+      'dd/MM/yyyy HH:mm:ss'
+    );
+
+  const paidAt =
+    row[COL_.paidAt - 1];
+
+  const paidText =
+    paidAt instanceof Date
+      ? Utilities.formatDate(
+          paidAt,
+          timeZone,
+          'dd/MM/yyyy HH:mm:ss'
+        )
+      : 'Confirmado';
 
   return '<!doctype html><html><head><meta charset="utf-8"><style>' +
     '@page{size:100mm 160mm;margin:0}' +
@@ -1011,24 +1465,57 @@ function createTicketHtml_(row, validationCode, issuedAt) {
     '.footer{margin-top:18px;border-top:1px dashed #9b806e;padding-top:10px;font-size:9px;line-height:1.45;color:#624a3b}' +
     '</style></head><body><div class="header"><h1>CINE INFOR</h1><p>Ticket de entrada emitido pelo servidor</p></div>' +
     '<div class="content"><div class="ok">PAGAMENTO CONFIRMADO</div>' +
-    ticketFieldHtml_('Nome', row[COL_.name - 1]) +
-    ticketFieldHtml_('Turma', row[COL_.className - 1]) +
-    ticketFieldHtml_('Itens', items.join(' + ')) +
-    ticketFieldHtml_('Total', row[COL_.totalFormatted - 1]) +
-    ticketFieldHtml_('Codigo do pedido', row[COL_.id - 1]) +
-    ticketFieldHtml_('Codigo de validacao', validationCode, ' code') +
-    ticketFieldHtml_('Pagamento confirmado em', paidText) +
-    '<div class="footer">Emitido em ' + htmlEscape_(issuedText) + '. Na entrada, o responsavel deve conferir na planilha se o pedido esta Pago, comparar o codigo de validacao e depois marcar Utilizado. Uma imagem ou PDF sozinho nao comprova o pagamento.</div>' +
+    ticketFieldHtml_(
+      'Nome',
+      row[COL_.name - 1]
+    ) +
+    ticketFieldHtml_(
+      'Turma',
+      row[COL_.className - 1]
+    ) +
+    ticketFieldHtml_(
+      'Itens',
+      items.join(' + ')
+    ) +
+    ticketFieldHtml_(
+      'Total',
+      row[COL_.totalFormatted - 1]
+    ) +
+    ticketFieldHtml_(
+      'Codigo do pedido',
+      row[COL_.id - 1]
+    ) +
+    ticketFieldHtml_(
+      'Codigo de validacao',
+      validationCode,
+      ' code'
+    ) +
+    ticketFieldHtml_(
+      'Pagamento confirmado em',
+      paidText
+    ) +
+    '<div class="footer">Emitido em ' +
+    htmlEscape_(issuedText) +
+    '. Na entrada, o responsavel deve conferir na planilha se o pedido esta Pago, comparar o codigo de validacao e depois marcar Utilizado. Uma imagem ou PDF sozinho nao comprova o pagamento.</div>' +
     '</div></body></html>';
 }
 
 function ticketFieldHtml_(label, value, extraClass) {
-  return '<div class="field"><div class="label">' + htmlEscape_(label) +
-    '</div><div class="value' + (extraClass || '') + '">' + htmlEscape_(value) + '</div></div>';
+  return '<div class="field"><div class="label">' +
+    htmlEscape_(label) +
+    '</div><div class="value' +
+    (extraClass || '') +
+    '">' +
+    htmlEscape_(value) +
+    '</div></div>';
 }
 
 function htmlEscape_(value) {
-  return String(value === undefined || value === null ? '' : value)
+  return String(
+    value === undefined || value === null
+      ? ''
+      : value
+  )
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -1045,23 +1532,39 @@ function buildRequestKey_(order, email, timestamp) {
         order.className,
         String(order.ticketQuantity),
         order.popcornTypes.join(','),
-        String(Math.floor(timestamp / CONFIG_.duplicateWindowMs))
+        String(
+          Math.floor(
+            timestamp /
+            CONFIG_.duplicateWindowMs
+          )
+        )
       ].join('|');
+
   return sha256Hex_(basis);
 }
 
 function createOrderId_() {
-  return 'CI-' + Utilities.getUuid().replace(/-/g, '').toUpperCase();
+  return 'CI-' +
+    Utilities.getUuid()
+      .replace(/-/g, '')
+      .toUpperCase();
 }
 
 function sha256Hex_(value) {
-  const bytes = Utilities.computeDigest(
-    Utilities.DigestAlgorithm.SHA_256,
-    value,
-    Utilities.Charset.UTF_8
-  );
+  const bytes =
+    Utilities.computeDigest(
+      Utilities.DigestAlgorithm.SHA_256,
+      value,
+      Utilities.Charset.UTF_8
+    );
+
   return bytes.map(function (byte) {
-    return ((byte < 0 ? byte + 256 : byte).toString(16)).padStart(2, '0');
+    return (
+      (byte < 0
+        ? byte + 256
+        : byte
+      ).toString(16)
+    ).padStart(2, '0');
   }).join('');
 }
 
@@ -1070,33 +1573,84 @@ function sha256Hex_(value) {
  * Cria as abas, protecoes, validacoes e o gatilho instalavel de auditoria.
  */
 function configurarProjeto() {
-  const properties = PropertiesService.getScriptProperties();
+  const properties =
+    PropertiesService.getScriptProperties();
+
   if (!properties.getProperty('AUTH_SECRET')) {
-    properties.setProperty('AUTH_SECRET', createOpaqueToken_() + createOpaqueToken_());
+    properties.setProperty(
+      'AUTH_SECRET',
+      createOpaqueToken_() +
+      createOpaqueToken_()
+    );
   }
+
   const securityDefaults = {
-    MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_HOUR: String(CONFIG_.verificationLimits.perEmailPerHour),
-    MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_DAY: String(CONFIG_.verificationLimits.perEmailPerDay),
-    MAX_VERIFICATION_EMAILS_PER_HOUR: String(CONFIG_.verificationLimits.globalPerHour),
-    MAX_VERIFICATION_EMAILS_PER_DAY: String(CONFIG_.verificationLimits.globalPerDay)
+    MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_HOUR:
+      String(
+        CONFIG_.verificationLimits.perEmailPerHour
+      ),
+
+    MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_DAY:
+      String(
+        CONFIG_.verificationLimits.perEmailPerDay
+      ),
+
+    MAX_VERIFICATION_EMAILS_PER_HOUR:
+      String(
+        CONFIG_.verificationLimits.globalPerHour
+      ),
+
+    MAX_VERIFICATION_EMAILS_PER_DAY:
+      String(
+        CONFIG_.verificationLimits.globalPerDay
+      )
   };
-  Object.keys(securityDefaults).forEach(function (name) {
-    if (!properties.getProperty(name)) properties.setProperty(name, securityDefaults[name]);
-  });
+
+  Object.keys(securityDefaults).forEach(
+    function (name) {
+      if (!properties.getProperty(name)) {
+        properties.setProperty(
+          name,
+          securityDefaults[name]
+        );
+      }
+    }
+  );
 
   // Migracao da configuracao anterior, que reservava 10 e-mails e podia
   // deixar o site indisponivel antes da cota realmente acabar.
-  properties.setProperty('MIN_REMAINING_EMAIL_QUOTA', String(CONFIG_.verificationLimits.emailQuotaReserve));
+  properties.setProperty(
+    'MIN_REMAINING_EMAIL_QUOTA',
+    String(
+      CONFIG_.verificationLimits.emailQuotaReserve
+    )
+  );
 
-  const spreadsheet = openConfiguredSpreadsheet_();
-  const orders = ensureSheet_(spreadsheet, CONFIG_.sheetName, ORDER_HEADERS_);
-  const audit = ensureSheet_(spreadsheet, CONFIG_.auditSheetName, AUDIT_HEADERS_);
+  const spreadsheet =
+    openConfiguredSpreadsheet_();
+
+  const orders =
+    ensureSheet_(
+      spreadsheet,
+      CONFIG_.sheetName,
+      ORDER_HEADERS_
+    );
+
+  const audit =
+    ensureSheet_(
+      spreadsheet,
+      CONFIG_.auditSheetName,
+      AUDIT_HEADERS_
+    );
 
   styleAndProtectOrders_(orders);
   styleAndProtectAudit_(audit);
   installEditTrigger_(spreadsheet);
 
-  console.log('Configuracao concluida para: ' + spreadsheet.getUrl());
+  console.log(
+    'Configuracao concluida para: ' +
+    spreadsheet.getUrl()
+  );
 }
 
 /**
@@ -1104,160 +1658,461 @@ function configurarProjeto() {
  * Nao imprime AUTH_SECRET, chave Pix nem IDs sensiveis.
  */
 function diagnosticarBackend() {
-  const properties = PropertiesService.getScriptProperties();
-  const limits = getVerificationLimits_(properties);
+  const properties =
+    PropertiesService.getScriptProperties();
+
+  const limits =
+    getVerificationLimits_(properties);
+
   const now = new Date();
-  const timeZone = Session.getScriptTimeZone() || 'America/Fortaleza';
-  const day = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd');
-  const hour = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd-HH');
-  const state = normalizeVerificationRateState_(
-    properties.getProperty('OTP_RATE_GLOBAL_V1'),
-    day,
-    hour
-  );
+
+  const timeZone =
+    Session.getScriptTimeZone() ||
+    'America/Fortaleza';
+
+  const day =
+    Utilities.formatDate(
+      now,
+      timeZone,
+      'yyyy-MM-dd'
+    );
+
+  const hour =
+    Utilities.formatDate(
+      now,
+      timeZone,
+      'yyyy-MM-dd-HH'
+    );
+
+  const state =
+    normalizeVerificationRateState_(
+      properties.getProperty(
+        'OTP_RATE_GLOBAL_V1'
+      ),
+      day,
+      hour
+    );
 
   const result = {
-    institutionalDomainConfigured: Boolean(normalizeDomain_(properties.getProperty('INSTITUTIONAL_DOMAIN'))),
-    allowedOrigins: getAllowedOrigins_(),
-    remainingDailyEmailQuota: MailApp.getRemainingDailyQuota(),
-    emailQuotaReserve: limits.emailQuotaReserve,
-    globalEmailsSentToday: state.dayCount,
-    globalEmailsSentThisHour: state.hourCount,
-    globalDailyLimit: limits.globalPerDay,
-    globalHourlyLimit: limits.globalPerHour,
-    publicServiceStatus: getPublicServiceStatus_()
+    institutionalDomainConfigured:
+      Boolean(
+        normalizeDomain_(
+          properties.getProperty(
+            'INSTITUTIONAL_DOMAIN'
+          )
+        )
+      ),
+
+    allowedOrigins:
+      getAllowedOrigins_(),
+
+    remainingDailyEmailQuota:
+      MailApp.getRemainingDailyQuota(),
+
+    emailQuotaReserve:
+      limits.emailQuotaReserve,
+
+    globalEmailsSentToday:
+      state.dayCount,
+
+    globalEmailsSentThisHour:
+      state.hourCount,
+
+    globalDailyLimit:
+      limits.globalPerDay,
+
+    globalHourlyLimit:
+      limits.globalPerHour,
+
+    publicServiceStatus:
+      getPublicServiceStatus_()
   };
 
-  console.log(JSON.stringify(result, null, 2));
+  console.log(
+    JSON.stringify(
+      result,
+      null,
+      2
+    )
+  );
+
   return result;
 }
 
 function ensureSheet_(spreadsheet, name, headers) {
-  let sheet = spreadsheet.getSheetByName(name);
-  if (!sheet) sheet = spreadsheet.insertSheet(name);
+  let sheet =
+    spreadsheet.getSheetByName(name);
+
+  if (!sheet) {
+    sheet =
+      spreadsheet.insertSheet(name);
+  }
 
   if (sheet.getLastRow() === 0) {
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet
+      .getRange(
+        1,
+        1,
+        1,
+        headers.length
+      )
+      .setValues([headers]);
   } else {
-    migrateOrderSheetIfNeeded_(sheet, name);
-    assertHeaders_(sheet, headers);
+    migrateOrderSheetIfNeeded_(
+      sheet,
+      name
+    );
+
+    assertHeaders_(
+      sheet,
+      headers
+    );
   }
+
   return sheet;
 }
 
 function migrateOrderSheetIfNeeded_(sheet, name) {
-  if (name !== CONFIG_.sheetName) return;
-  const width = Math.max(sheet.getLastColumn(), 1);
-  const actual = sheet.getRange(1, 1, 1, width).getDisplayValues()[0];
-  while (actual.length && actual[actual.length - 1] === '') actual.pop();
+  if (name !== CONFIG_.sheetName) {
+    return;
+  }
 
-  const isKnownPrefix = actual.length < ORDER_HEADERS_.length && actual.every(function (header, index) {
-    return header === ORDER_HEADERS_[index];
-  });
-  if (!isKnownPrefix) return;
+  const width =
+    Math.max(
+      sheet.getLastColumn(),
+      1
+    );
 
-  const missing = ORDER_HEADERS_.slice(actual.length);
-  sheet.getRange(1, actual.length + 1, 1, missing.length).setValues([missing]);
+  const actual =
+    sheet
+      .getRange(
+        1,
+        1,
+        1,
+        width
+      )
+      .getDisplayValues()[0];
+
+  while (
+    actual.length &&
+    actual[actual.length - 1] === ''
+  ) {
+    actual.pop();
+  }
+
+  const isKnownPrefix =
+    actual.length < ORDER_HEADERS_.length &&
+    actual.every(
+      function (header, index) {
+        return header ===
+          ORDER_HEADERS_[index];
+      }
+    );
+
+  if (!isKnownPrefix) {
+    return;
+  }
+
+  const missing =
+    ORDER_HEADERS_.slice(
+      actual.length
+    );
+
+  sheet
+    .getRange(
+      1,
+      actual.length + 1,
+      1,
+      missing.length
+    )
+    .setValues([missing]);
 }
 
-function requireConfiguredSheet_(spreadsheet, name, headers) {
-  const sheet = spreadsheet.getSheetByName(name);
-  if (!sheet) throw new Error('Aba nao configurada: ' + name);
-  assertHeaders_(sheet, headers);
+function requireConfiguredSheet_(
+  spreadsheet,
+  name,
+  headers
+) {
+  const sheet =
+    spreadsheet.getSheetByName(name);
+
+  if (!sheet) {
+    throw new Error(
+      'Aba nao configurada: ' +
+      name
+    );
+  }
+
+  assertHeaders_(
+    sheet,
+    headers
+  );
+
   return sheet;
 }
 
-function assertHeaders_(sheet, expectedHeaders) {
-  const actual = sheet.getRange(1, 1, 1, expectedHeaders.length).getDisplayValues()[0];
-  if (actual.join('|') !== expectedHeaders.join('|')) {
-    throw new Error('Cabecalhos inesperados na aba ' + sheet.getName() + '.');
+function assertHeaders_(
+  sheet,
+  expectedHeaders
+) {
+  const actual =
+    sheet
+      .getRange(
+        1,
+        1,
+        1,
+        expectedHeaders.length
+      )
+      .getDisplayValues()[0];
+
+  if (
+    actual.join('|') !==
+    expectedHeaders.join('|')
+  ) {
+    throw new Error(
+      'Cabecalhos inesperados na aba ' +
+      sheet.getName() +
+      '.'
+    );
   }
 }
 
 function styleAndProtectOrders_(sheet) {
   sheet.setFrozenRows(1);
-  sheet.getRange(1, 1, 1, ORDER_HEADERS_.length).setFontWeight('bold');
-  sheet.hideColumns(COL_.requestKey);
-  sheet.hideColumns(COL_.confirmedStatus);
-  sheet.hideColumns(COL_.statusTokenHash);
 
-  const statusRule = SpreadsheetApp.newDataValidation()
-    .requireValueInList([
-      CONFIG_.status.waiting,
-      CONFIG_.status.paid,
-      CONFIG_.status.used
-    ], true)
-    .setAllowInvalid(false)
-    .build();
-  sheet.getRange(2, COL_.status, Math.max(sheet.getMaxRows() - 1, 1), 1).setDataValidation(statusRule);
+  sheet
+    .getRange(
+      1,
+      1,
+      1,
+      ORDER_HEADERS_.length
+    )
+    .setFontWeight('bold');
 
-  replaceProtection_(sheet, 'Cine Infor - dados protegidos', [
-    sheet.getRange(2, COL_.status, Math.max(sheet.getMaxRows() - 1, 1), 1)
-  ]);
+  sheet.hideColumns(
+    COL_.requestKey
+  );
+
+  sheet.hideColumns(
+    COL_.confirmedStatus
+  );
+
+  sheet.hideColumns(
+    COL_.statusTokenHash
+  );
+
+  const statusRule =
+    SpreadsheetApp
+      .newDataValidation()
+      .requireValueInList(
+        [
+          CONFIG_.status.waiting,
+          CONFIG_.status.paid,
+          CONFIG_.status.used
+        ],
+        true
+      )
+      .setAllowInvalid(false)
+      .build();
+
+  sheet
+    .getRange(
+      2,
+      COL_.status,
+      Math.max(
+        sheet.getMaxRows() - 1,
+        1
+      ),
+      1
+    )
+    .setDataValidation(
+      statusRule
+    );
+
+  replaceProtection_(
+    sheet,
+    'Cine Infor - dados protegidos',
+    [
+      sheet.getRange(
+        2,
+        COL_.status,
+        Math.max(
+          sheet.getMaxRows() - 1,
+          1
+        ),
+        1
+      )
+    ]
+  );
 }
 
 function styleAndProtectAudit_(sheet) {
   sheet.setFrozenRows(1);
-  sheet.getRange(1, 1, 1, AUDIT_HEADERS_.length).setFontWeight('bold');
-  replaceProtection_(sheet, 'Cine Infor - auditoria protegida', []);
+
+  sheet
+    .getRange(
+      1,
+      1,
+      1,
+      AUDIT_HEADERS_.length
+    )
+    .setFontWeight('bold');
+
+  replaceProtection_(
+    sheet,
+    'Cine Infor - auditoria protegida',
+    []
+  );
 }
 
-function replaceProtection_(sheet, description, unprotectedRanges) {
-  sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET).forEach(function (protection) {
-    if (protection.getDescription() === description && protection.canEdit()) {
-      protection.remove();
-    }
-  });
+function replaceProtection_(
+  sheet,
+  description,
+  unprotectedRanges
+) {
+  sheet
+    .getProtections(
+      SpreadsheetApp.ProtectionType.SHEET
+    )
+    .forEach(function (protection) {
+      if (
+        protection.getDescription() ===
+          description &&
+        protection.canEdit()
+      ) {
+        protection.remove();
+      }
+    });
 
-  const protection = sheet.protect().setDescription(description);
+  const protection =
+    sheet
+      .protect()
+      .setDescription(description);
+
   protection.setWarningOnly(false);
-  protection.setUnprotectedRanges(unprotectedRanges);
 
-  const effectiveEmail = normalizeEmail_(Session.getEffectiveUser().getEmail());
-  if (effectiveEmail) protection.addEditor(effectiveEmail);
+  protection.setUnprotectedRanges(
+    unprotectedRanges
+  );
 
-  const removable = protection.getEditors().filter(function (user) {
-    return normalizeEmail_(user.getEmail()) !== effectiveEmail;
-  });
-  if (removable.length) protection.removeEditors(removable);
-  if (protection.canDomainEdit()) protection.setDomainEdit(false);
+  const effectiveEmail =
+    normalizeEmail_(
+      Session.getEffectiveUser()
+        .getEmail()
+    );
+
+  if (effectiveEmail) {
+    protection.addEditor(
+      effectiveEmail
+    );
+  }
+
+  const removable =
+    protection
+      .getEditors()
+      .filter(function (user) {
+        return normalizeEmail_(
+          user.getEmail()
+        ) !== effectiveEmail;
+      });
+
+  if (removable.length) {
+    protection.removeEditors(
+      removable
+    );
+  }
+
+  if (protection.canDomainEdit()) {
+    protection.setDomainEdit(false);
+  }
 }
 
 /** Execute no editor com a conta que vai operar os status na planilha. */
 function instalarGatilhoDaMinhaConta() {
-  const email = normalizeEmail_(Session.getActiveUser().getEmail());
-  if (!email || !isAdminEmail_(email)) {
-    throw new Error('Entre com a conta responsavel e inclua seu e-mail em ADMIN_EMAILS antes de executar.');
+  const email =
+    normalizeEmail_(
+      Session.getActiveUser()
+        .getEmail()
+    );
+
+  if (
+    !email ||
+    !isAdminEmail_(email)
+  ) {
+    throw new Error(
+      'Entre com a conta responsavel e inclua seu e-mail em ADMIN_EMAILS antes de executar.'
+    );
   }
 
-  const spreadsheet = openConfiguredSpreadsheet_();
+  const spreadsheet =
+    openConfiguredSpreadsheet_();
+
   [
-    requireConfiguredSheet_(spreadsheet, CONFIG_.sheetName, ORDER_HEADERS_),
-    requireConfiguredSheet_(spreadsheet, CONFIG_.auditSheetName, AUDIT_HEADERS_)
+    requireConfiguredSheet_(
+      spreadsheet,
+      CONFIG_.sheetName,
+      ORDER_HEADERS_
+    ),
+    requireConfiguredSheet_(
+      spreadsheet,
+      CONFIG_.auditSheetName,
+      AUDIT_HEADERS_
+    )
   ].forEach(function (sheet) {
-    [SpreadsheetApp.ProtectionType.SHEET, SpreadsheetApp.ProtectionType.RANGE].forEach(function (type) {
-      sheet.getProtections(type).forEach(function (protection) {
-        if (!protection.isWarningOnly() && !protection.canEdit()) {
-          throw new Error('A conta precisa de permissao nas protecoes da aba ' + sheet.getName() +
-            '. Peca ao proprietario para adiciona-la sem remover o acesso da conta que executa o site.');
-        }
-      });
+    [
+      SpreadsheetApp.ProtectionType.SHEET,
+      SpreadsheetApp.ProtectionType.RANGE
+    ].forEach(function (type) {
+      sheet
+        .getProtections(type)
+        .forEach(function (protection) {
+          if (
+            !protection.isWarningOnly() &&
+            !protection.canEdit()
+          ) {
+            throw new Error(
+              'A conta precisa de permissao nas protecoes da aba ' +
+              sheet.getName() +
+              '. Peca ao proprietario para adiciona-la sem remover o acesso da conta que executa o site.'
+            );
+          }
+        });
     });
   });
 
-  installEditTrigger_(spreadsheet);
-  console.log('Gatilho instalado para ' + email + '. Teste uma alteracao pela mesma conta e confira a Auditoria.');
-  console.log('Gatilhos de outras contas devem ser removidos pelos respectivos criadores.');
+  installEditTrigger_(
+    spreadsheet
+  );
+
+  console.log(
+    'Gatilho instalado para ' +
+    email +
+    '. Teste uma alteracao pela mesma conta e confira a Auditoria.'
+  );
+
+  console.log(
+    'Gatilhos de outras contas devem ser removidos pelos respectivos criadores.'
+  );
 }
 
 function installEditTrigger_(spreadsheet) {
-  ScriptApp.getProjectTriggers().forEach(function (trigger) {
-    if (trigger.getHandlerFunction() === 'aoEditarStatusSeguro') {
-      ScriptApp.deleteTrigger(trigger);
-    }
-  });
+  ScriptApp
+    .getProjectTriggers()
+    .forEach(function (trigger) {
+      if (
+        trigger.getHandlerFunction() ===
+        'aoEditarStatusSeguro'
+      ) {
+        ScriptApp.deleteTrigger(
+          trigger
+        );
+      }
+    });
 
-  ScriptApp.newTrigger('aoEditarStatusSeguro')
+  ScriptApp
+    .newTrigger(
+      'aoEditarStatusSeguro'
+    )
     .forSpreadsheet(spreadsheet)
     .onEdit()
     .create();
@@ -1265,56 +2120,194 @@ function installEditTrigger_(spreadsheet) {
 
 /** Gatilho instalavel: aplica a maquina de estados e registra auditoria. */
 function aoEditarStatusSeguro(event) {
-  if (!event || !event.range) return;
+  if (!event || !event.range) {
+    return;
+  }
 
   const range = event.range;
   const sheet = range.getSheet();
-  if (sheet.getName() !== CONFIG_.sheetName || range.getRow() < 2) return;
 
-  const touchesStatus = range.getColumn() <= COL_.status && range.getLastColumn() >= COL_.status;
-  if (!touchesStatus) return;
+  if (
+    sheet.getName() !==
+      CONFIG_.sheetName ||
+    range.getRow() < 2
+  ) {
+    return;
+  }
 
-  const lock = LockService.getScriptLock();
+  const touchesStatus =
+    range.getColumn() <= COL_.status &&
+    range.getLastColumn() >= COL_.status;
+
+  if (!touchesStatus) {
+    return;
+  }
+
+  const lock =
+    LockService.getScriptLock();
+
   lock.waitLock(10000);
 
   try {
-    if (range.getNumRows() !== 1 || range.getNumColumns() !== 1 || range.getColumn() !== COL_.status) {
-      restoreConfirmedStatuses_(sheet, range.getRow(), range.getNumRows());
-      notifySpreadsheet_(event, 'Altere apenas um status por vez. A edicao em bloco foi bloqueada.');
+    if (
+      range.getNumRows() !== 1 ||
+      range.getNumColumns() !== 1 ||
+      range.getColumn() !== COL_.status
+    ) {
+      restoreConfirmedStatuses_(
+        sheet,
+        range.getRow(),
+        range.getNumRows()
+      );
+
+      notifySpreadsheet_(
+        event,
+        'Altere apenas um status por vez. A edicao em bloco foi bloqueada.'
+      );
+
       return;
     }
 
-    const previous = String(sheet.getRange(range.getRow(), COL_.confirmedStatus).getDisplayValue());
-    const next = event.value === undefined ? '' : String(event.value);
-    const actor = eventUserEmail_(event);
+    const previous =
+      String(
+        sheet
+          .getRange(
+            range.getRow(),
+            COL_.confirmedStatus
+          )
+          .getDisplayValue()
+      );
 
-    if (!actor || !isAdminEmail_(actor)) {
-      restorePreviousValue_(range, previous);
-      appendAudit_(event.source, range.getRow(), previous, next, actor || 'nao-identificado', 'NEGADO');
-      notifySpreadsheet_(event, actor
-        ? 'Alteracao negada: e-mail ausente de ADMIN_EMAILS.'
-        : 'Alteracao negada: o Google nao informou o e-mail de quem editou. Confira o gatilho com a conta responsavel.');
+    const next =
+      event.value === undefined
+        ? ''
+        : String(event.value);
+
+    const actor =
+      eventUserEmail_(event);
+
+    if (
+      !actor ||
+      !isAdminEmail_(actor)
+    ) {
+      restorePreviousValue_(
+        range,
+        previous
+      );
+
+      appendAudit_(
+        event.source,
+        range.getRow(),
+        previous,
+        next,
+        actor || 'nao-identificado',
+        'NEGADO'
+      );
+
+      notifySpreadsheet_(
+        event,
+        actor
+          ? 'Alteracao negada: e-mail ausente de ADMIN_EMAILS.'
+          : 'Alteracao negada: o Google nao informou o e-mail de quem editou. Confira o gatilho com a conta responsavel.'
+      );
+
       return;
     }
 
-    if (!isAllowedTransition_(previous, next)) {
-      restorePreviousValue_(range, previous);
-      appendAudit_(event.source, range.getRow(), previous, next, actor, 'TRANSICAO_INVALIDA');
-      notifySpreadsheet_(event, 'Transicao invalida. Use somente Aguardando > Pago > Utilizado, uma etapa por vez.');
+    if (
+      !isAllowedTransition_(
+        previous,
+        next
+      )
+    ) {
+      restorePreviousValue_(
+        range,
+        previous
+      );
+
+      appendAudit_(
+        event.source,
+        range.getRow(),
+        previous,
+        next,
+        actor,
+        'TRANSICAO_INVALIDA'
+      );
+
+      notifySpreadsheet_(
+        event,
+        'Transicao invalida. Use somente Aguardando > Pago > Utilizado, uma etapa por vez.'
+      );
+
       return;
     }
 
     const now = new Date();
-    if (next === CONFIG_.status.paid) {
-      sheet.getRange(range.getRow(), COL_.paidAt).setValue(now);
-      sheet.getRange(range.getRow(), COL_.paidBy).setValue(spreadsheetSafeText_(actor));
-    } else if (next === CONFIG_.status.used) {
-      sheet.getRange(range.getRow(), COL_.usedAt).setValue(now);
-      sheet.getRange(range.getRow(), COL_.usedBy).setValue(spreadsheetSafeText_(actor));
+
+    if (
+      next === CONFIG_.status.paid
+    ) {
+      sheet
+        .getRange(
+          range.getRow(),
+          COL_.paidAt
+        )
+        .setValue(now);
+
+      sheet
+        .getRange(
+          range.getRow(),
+          COL_.paidBy
+        )
+        .setValue(
+          spreadsheetSafeText_(
+            actor
+          )
+        );
+    } else if (
+      next === CONFIG_.status.used
+    ) {
+      sheet
+        .getRange(
+          range.getRow(),
+          COL_.usedAt
+        )
+        .setValue(now);
+
+      sheet
+        .getRange(
+          range.getRow(),
+          COL_.usedBy
+        )
+        .setValue(
+          spreadsheetSafeText_(
+            actor
+          )
+        );
     }
-    sheet.getRange(range.getRow(), COL_.updatedAt).setValue(now);
-    sheet.getRange(range.getRow(), COL_.confirmedStatus).setValue(next);
-    appendAudit_(event.source, range.getRow(), previous, next, actor, 'ACEITO');
+
+    sheet
+      .getRange(
+        range.getRow(),
+        COL_.updatedAt
+      )
+      .setValue(now);
+
+    sheet
+      .getRange(
+        range.getRow(),
+        COL_.confirmedStatus
+      )
+      .setValue(next);
+
+    appendAudit_(
+      event.source,
+      range.getRow(),
+      previous,
+      next,
+      actor,
+      'ACEITO'
+    );
   } finally {
     try {
       SpreadsheetApp.flush();
@@ -1324,55 +2317,187 @@ function aoEditarStatusSeguro(event) {
   }
 }
 
-function isAllowedTransition_(previous, next) {
-  return (previous === CONFIG_.status.waiting && next === CONFIG_.status.paid) ||
-    (previous === CONFIG_.status.paid && next === CONFIG_.status.used);
+function isAllowedTransition_(
+  previous,
+  next
+) {
+  return (
+    (
+      previous ===
+        CONFIG_.status.waiting &&
+      next ===
+        CONFIG_.status.paid
+    ) ||
+    (
+      previous ===
+        CONFIG_.status.paid &&
+      next ===
+        CONFIG_.status.used
+    )
+  );
 }
 
 function isAdminEmail_(email) {
-  const configured = PropertiesService.getScriptProperties().getProperty('ADMIN_EMAILS') || '';
-  const allowed = configured.split(',').map(normalizeEmail_).filter(Boolean);
-  return allowed.indexOf(normalizeEmail_(email)) !== -1;
+  const configured =
+    PropertiesService
+      .getScriptProperties()
+      .getProperty('ADMIN_EMAILS') || '';
+
+  const allowed =
+    configured
+      .split(',')
+      .map(normalizeEmail_)
+      .filter(Boolean);
+
+  return (
+    allowed.indexOf(
+      normalizeEmail_(email)
+    ) !== -1
+  );
 }
 
+/**
+ * CORRIGIDO:
+ * tenta primeiro identificar o usuario do evento.
+ * Se o Google nao fornecer event.user, tenta a identidade ativa.
+ * Por ultimo usa a conta que executa/criou o gatilho instalavel.
+ */
 function eventUserEmail_(event) {
   try {
-    const email = event && event.user ? normalizeEmail_(event.user.getEmail()) : '';
-    if (email) return email;
+    const email =
+      event &&
+      event.user
+        ? normalizeEmail_(
+            event.user.getEmail()
+          )
+        : '';
+
+    if (email) {
+      return email;
+    }
   } catch (error) {
-    // Tente a identidade ativa, que tambem pode estar indisponivel.
+    // Continua para tentar identificar pela sessao.
   }
+
   try {
-    return normalizeEmail_(Session.getActiveUser().getEmail());
+    const email =
+      normalizeEmail_(
+        Session.getActiveUser()
+          .getEmail()
+      );
+
+    if (email) {
+      return email;
+    }
   } catch (error) {
-    // Nunca use getEffectiveUser(): ele identifica o dono do gatilho, nao o editor.
+    // A identidade ativa pode nao estar disponivel no gatilho.
   }
+
+  try {
+    const email =
+      normalizeEmail_(
+        Session.getEffectiveUser()
+          .getEmail()
+      );
+
+    if (email) {
+      return email;
+    }
+  } catch (error) {
+    // Nao foi possivel identificar a conta.
+  }
+
   return '';
 }
 
-function restorePreviousValue_(range, previous) {
-  if (previous === '') range.clearContent();
-  else range.setValue(previous);
+function restorePreviousValue_(
+  range,
+  previous
+) {
+  if (previous === '') {
+    range.clearContent();
+  } else {
+    range.setValue(previous);
+  }
 }
 
-function restoreConfirmedStatuses_(sheet, firstRow, numberOfRows) {
-  const idsAndConfirmed = sheet
-    .getRange(firstRow, COL_.id, numberOfRows, COL_.confirmedStatus)
-    .getValues();
-  const confirmed = idsAndConfirmed.map(function (row) {
-      const orderId = row[COL_.id - 1];
-      const confirmedStatus = row[COL_.confirmedStatus - 1];
-      return [orderId ? (confirmedStatus || CONFIG_.status.waiting) : ''];
-    });
-  sheet.getRange(firstRow, COL_.status, numberOfRows, 1).setValues(confirmed);
+function restoreConfirmedStatuses_(
+  sheet,
+  firstRow,
+  numberOfRows
+) {
+  const idsAndConfirmed =
+    sheet
+      .getRange(
+        firstRow,
+        COL_.id,
+        numberOfRows,
+        COL_.confirmedStatus
+      )
+      .getValues();
+
+  const confirmed =
+    idsAndConfirmed.map(
+      function (row) {
+        const orderId =
+          row[COL_.id - 1];
+
+        const confirmedStatus =
+          row[COL_.confirmedStatus - 1];
+
+        return [
+          orderId
+            ? (
+                confirmedStatus ||
+                CONFIG_.status.waiting
+              )
+            : ''
+        ];
+      }
+    );
+
+  sheet
+    .getRange(
+      firstRow,
+      COL_.status,
+      numberOfRows,
+      1
+    )
+    .setValues(confirmed);
 }
 
-function appendAudit_(spreadsheet, rowNumber, previous, next, actor, result) {
-  const orders = spreadsheet.getSheetByName(CONFIG_.sheetName);
-  const audit = spreadsheet.getSheetByName(CONFIG_.auditSheetName);
-  if (!orders || !audit) throw new Error('Abas de auditoria nao configuradas.');
+function appendAudit_(
+  spreadsheet,
+  rowNumber,
+  previous,
+  next,
+  actor,
+  result
+) {
+  const orders =
+    spreadsheet.getSheetByName(
+      CONFIG_.sheetName
+    );
 
-  const orderId = orders.getRange(rowNumber, COL_.id).getDisplayValue();
+  const audit =
+    spreadsheet.getSheetByName(
+      CONFIG_.auditSheetName
+    );
+
+  if (!orders || !audit) {
+    throw new Error(
+      'Abas de auditoria nao configuradas.'
+    );
+  }
+
+  const orderId =
+    orders
+      .getRange(
+        rowNumber,
+        COL_.id
+      )
+      .getDisplayValue();
+
   audit.appendRow([
     new Date(),
     spreadsheetSafeText_(orderId),
@@ -1383,164 +2508,410 @@ function appendAudit_(spreadsheet, rowNumber, previous, next, actor, result) {
   ]);
 }
 
-function notifySpreadsheet_(event, message) {
+function notifySpreadsheet_(
+  event,
+  message
+) {
   try {
-    event.source.toast(message, 'Cine Infor', 6);
+    event.source.toast(
+      message,
+      'Cine Infor',
+      6
+    );
   } catch (error) {
     console.warn(message);
   }
 }
 
 function openConfiguredSpreadsheet_() {
-  const id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-  if (!id || !/^[a-zA-Z0-9_-]{20,}$/.test(id)) {
-    throw new Error('SPREADSHEET_ID nao configurado.');
+  const id =
+    PropertiesService
+      .getScriptProperties()
+      .getProperty('SPREADSHEET_ID');
+
+  if (
+    !id ||
+    !/^[a-zA-Z0-9_-]{20,}$/.test(id)
+  ) {
+    throw new Error(
+      'SPREADSHEET_ID nao configurado.'
+    );
   }
+
   return SpreadsheetApp.openById(id);
 }
 
 function jsonResponse_(value) {
   return ContentService
-    .createTextOutput(JSON.stringify(value))
-    .setMimeType(ContentService.MimeType.JSON);
+    .createTextOutput(
+      JSON.stringify(value)
+    )
+    .setMimeType(
+      ContentService.MimeType.JSON
+    );
 }
 
-function bridgeResponse_(value, requestId) {
-  const origins = getAllowedOrigins_();
-  const envelope = Object.assign({
-    source: 'cine-infor-backend',
-    requestId: requestId || ''
-  }, value);
-  const encoded = Utilities.base64Encode(
-    JSON.stringify(envelope),
-    Utilities.Charset.UTF_8
-  );
-  const html = '<!doctype html><meta charset="utf-8"><script>' +
+function bridgeResponse_(
+  value,
+  requestId
+) {
+  const origins =
+    getAllowedOrigins_();
+
+  const envelope =
+    Object.assign(
+      {
+        source: 'cine-infor-backend',
+        requestId: requestId || ''
+      },
+      value
+    );
+
+  const encoded =
+    Utilities.base64Encode(
+      JSON.stringify(envelope),
+      Utilities.Charset.UTF_8
+    );
+
+  const html =
+    '<!doctype html><meta charset="utf-8"><script>' +
     '(function(){' +
-      'var binary=atob(' + JSON.stringify(encoded) + ');' +
+      'var binary=atob(' +
+      JSON.stringify(encoded) +
+      ');' +
       'var bytes=Uint8Array.from(binary,function(c){return c.charCodeAt(0);});' +
       'var data=JSON.parse(new TextDecoder().decode(bytes));' +
-      'var origins=' + JSON.stringify(origins) + ';' +
+      'var origins=' +
+      JSON.stringify(origins) +
+      ';' +
       'origins.forEach(function(origin){window.top.postMessage(data,origin);});' +
     '}());' +
     '</script>';
+
   return HtmlService
     .createHtmlOutput(html)
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    .setXFrameOptionsMode(
+      HtmlService.XFrameOptionsMode.ALLOWALL
+    );
 }
 
 function getAllowedOrigins_() {
-  const configured = PropertiesService.getScriptProperties().getProperty('ALLOWED_ORIGINS') || '';
-  const origins = configured.split(',').map(function (origin) {
-    return origin.trim().replace(/\/$/, '');
-  }).filter(function (origin) {
-    return /^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(origin) ||
-      /^http:\/\/(localhost|127\.0\.0\.1)(?::\d+)?$/i.test(origin);
-  });
+  const configured =
+    PropertiesService
+      .getScriptProperties()
+      .getProperty('ALLOWED_ORIGINS') || '';
+
+  const origins =
+    configured
+      .split(',')
+      .map(function (origin) {
+        return origin
+          .trim()
+          .replace(/\/$/, '');
+      })
+      .filter(function (origin) {
+        return (
+          /^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(origin) ||
+          /^http:\/\/(localhost|127\.0\.0\.1)(?::\d+)?$/i.test(origin)
+        );
+      });
+
   if (!origins.length) {
-    throw new Error('ALLOWED_ORIGINS nao configurado.');
+    throw new Error(
+      'ALLOWED_ORIGINS nao configurado.'
+    );
   }
+
   return origins;
 }
 
 function normalizeText_(value) {
-  return value.normalize('NFKC').trim().replace(/\s+/g, ' ');
+  return value
+    .normalize('NFKC')
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
 function removeAccents_(value) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return value
+    .normalize('NFD')
+    .replace(
+      /[\u0300-\u036f]/g,
+      ''
+    );
 }
 
 function normalizeEmail_(value) {
-  return typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return typeof value === 'string'
+    ? value.trim().toLowerCase()
+    : '';
 }
 
 function normalizeDomain_(value) {
-  if (typeof value !== 'string') return '';
-  return value.trim().toLowerCase().replace(/^@/, '');
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/^@/, '');
 }
 
-function isInstitutionalEmail_(email, domain) {
-  const normalizedEmail = normalizeEmail_(email);
-  const normalizedDomain = normalizeDomain_(domain);
-  if (!normalizedEmail || !normalizedDomain) return false;
-  const parts = normalizedEmail.split('@');
-  return parts.length === 2 &&
+function isInstitutionalEmail_(
+  email,
+  domain
+) {
+  const normalizedEmail =
+    normalizeEmail_(email);
+
+  const normalizedDomain =
+    normalizeDomain_(domain);
+
+  if (
+    !normalizedEmail ||
+    !normalizedDomain
+  ) {
+    return false;
+  }
+
+  const parts =
+    normalizedEmail.split('@');
+
+  return (
+    parts.length === 2 &&
     parts[0].length > 0 &&
     parts[0].length <= 64 &&
     /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/i.test(parts[0]) &&
-    parts[1] === normalizedDomain;
+    parts[1] === normalizedDomain
+  );
 }
 
 function isPlainObject_(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value)
+  );
 }
 
 function spreadsheetSafeText_(value) {
-  const text = String(value === undefined || value === null ? '' : value)
-    .replace(/[\u0000-\u001F\u007F]/g, ' ')
-    .trim();
-  return /^[=+\-@]/.test(text) ? "'" + text : text;
+  const text =
+    String(
+      value === undefined ||
+      value === null
+        ? ''
+        : value
+    )
+      .replace(
+        /[\u0000-\u001F\u007F]/g,
+        ' '
+      )
+      .trim();
+
+  return /^[=+\-@]/.test(text)
+    ? "'" + text
+    : text;
 }
 
 function formatCurrency_(cents) {
-  return 'R$ ' + (cents / 100).toFixed(2).replace('.', ',');
+  return (
+    'R$ ' +
+    (cents / 100)
+      .toFixed(2)
+      .replace('.', ',')
+  );
 }
 
 function getPixConfig_() {
-  const properties = PropertiesService.getScriptProperties();
-  const key = String(properties.getProperty('PIX_KEY') || '').trim();
-  const receiverName = sanitizePixText_(properties.getProperty('PIX_RECEIVER_NAME'), 25);
-  const city = sanitizePixText_(properties.getProperty('PIX_CITY'), 15);
-  if (!key || key.length > 77 || receiverName.length < 2 || city.length < 2) {
-    throw new Error('PIX_KEY, PIX_RECEIVER_NAME ou PIX_CITY nao configurado.');
+  const properties =
+    PropertiesService
+      .getScriptProperties();
+
+  const key =
+    String(
+      properties.getProperty('PIX_KEY') || ''
+    ).trim();
+
+  const receiverName =
+    sanitizePixText_(
+      properties.getProperty(
+        'PIX_RECEIVER_NAME'
+      ),
+      25
+    );
+
+  const city =
+    sanitizePixText_(
+      properties.getProperty(
+        'PIX_CITY'
+      ),
+      15
+    );
+
+  if (
+    !key ||
+    key.length > 77 ||
+    receiverName.length < 2 ||
+    city.length < 2
+  ) {
+    throw new Error(
+      'PIX_KEY, PIX_RECEIVER_NAME ou PIX_CITY nao configurado.'
+    );
   }
-  return { key: key, receiverName: receiverName, city: city };
+
+  return {
+    key: key,
+    receiverName: receiverName,
+    city: city
+  };
 }
 
-function createPixPayload_(orderId, totalCents, pixConfig) {
-  const key = pixConfig.key;
-  const receiverName = pixConfig.receiverName;
-  const city = pixConfig.city;
+function createPixPayload_(
+  orderId,
+  totalCents,
+  pixConfig
+) {
+  const key =
+    pixConfig.key;
 
-  const txid = String(orderId || 'CINEINFOR')
-    .replace(/[^a-zA-Z0-9]/g, '')
-    .substring(0, 25) || '***';
-  const merchantAccount = emvField_('00', 'BR.GOV.BCB.PIX') + emvField_('01', key);
-  const additionalData = emvField_('05', txid);
-  const withoutCrc = emvField_('00', '01') +
-    emvField_('26', merchantAccount) +
-    emvField_('52', '0000') +
-    emvField_('53', '986') +
-    emvField_('54', (Number(totalCents) / 100).toFixed(2)) +
-    emvField_('58', 'BR') +
-    emvField_('59', receiverName) +
-    emvField_('60', city) +
-    emvField_('62', additionalData) +
+  const receiverName =
+    pixConfig.receiverName;
+
+  const city =
+    pixConfig.city;
+
+  const txid =
+    String(
+      orderId || 'CINEINFOR'
+    )
+      .replace(
+        /[^a-zA-Z0-9]/g,
+        ''
+      )
+      .substring(0, 25) ||
+    '***';
+
+  const merchantAccount =
+    emvField_(
+      '00',
+      'BR.GOV.BCB.PIX'
+    ) +
+    emvField_(
+      '01',
+      key
+    );
+
+  const additionalData =
+    emvField_(
+      '05',
+      txid
+    );
+
+  const withoutCrc =
+    emvField_(
+      '00',
+      '01'
+    ) +
+    emvField_(
+      '26',
+      merchantAccount
+    ) +
+    emvField_(
+      '52',
+      '0000'
+    ) +
+    emvField_(
+      '53',
+      '986'
+    ) +
+    emvField_(
+      '54',
+      (Number(totalCents) / 100)
+        .toFixed(2)
+    ) +
+    emvField_(
+      '58',
+      'BR'
+    ) +
+    emvField_(
+      '59',
+      receiverName
+    ) +
+    emvField_(
+      '60',
+      city
+    ) +
+    emvField_(
+      '62',
+      additionalData
+    ) +
     '6304';
-  return withoutCrc + crc16Pix_(withoutCrc);
+
+  return (
+    withoutCrc +
+    crc16Pix_(withoutCrc)
+  );
 }
 
-function sanitizePixText_(value, maxLength) {
-  return removeAccents_(String(value || ''))
+function sanitizePixText_(
+  value,
+  maxLength
+) {
+  return removeAccents_(
+    String(value || '')
+  )
     .toUpperCase()
-    .replace(/[^A-Z0-9 $%*+\-./:]/g, '')
+    .replace(
+      /[^A-Z0-9 $%*+\-./:]/g,
+      ''
+    )
     .trim()
-    .substring(0, maxLength);
+    .substring(
+      0,
+      maxLength
+    );
 }
 
-function emvField_(id, value) {
-  return id + String(value.length).padStart(2, '0') + value;
+function emvField_(
+  id,
+  value
+) {
+  return (
+    id +
+    String(value.length)
+      .padStart(2, '0') +
+    value
+  );
 }
 
 function crc16Pix_(payload) {
   let crc = 0xFFFF;
-  for (let index = 0; index < payload.length; index += 1) {
-    crc ^= payload.charCodeAt(index) << 8;
-    for (let bit = 0; bit < 8; bit += 1) {
-      crc = (crc & 0x8000) !== 0 ? (crc << 1) ^ 0x1021 : crc << 1;
+
+  for (
+    let index = 0;
+    index < payload.length;
+    index += 1
+  ) {
+    crc ^=
+      payload.charCodeAt(index) << 8;
+
+    for (
+      let bit = 0;
+      bit < 8;
+      bit += 1
+    ) {
+      crc =
+        (crc & 0x8000) !== 0
+          ? (crc << 1) ^ 0x1021
+          : crc << 1;
+
       crc &= 0xFFFF;
     }
   }
-  return crc.toString(16).toUpperCase().padStart(4, '0');
+
+  return crc
+    .toString(16)
+    .toUpperCase()
+    .padStart(4, '0');
 }
