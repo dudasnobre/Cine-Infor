@@ -215,7 +215,7 @@
     ========================= */
 
     const URL_APPS_SCRIPT =
-      'https://script.google.com/macros/s/AKfycbzaXnEdQ1L1K-GUvyyG4BMCucZbrmPfv9qsUeUfDkGE034LsWT8LbK7ZYktQIh6QBGlSw/exec';
+      'https://script.google.com/macros/s/AKfycbyPPTRc5eRLerXph3eQ6vBo_b628UzvlbG0_cY8vvesKBExIXeHGhbumasMDD_zq3H7kw/exec';
 
 
     /* =========================
