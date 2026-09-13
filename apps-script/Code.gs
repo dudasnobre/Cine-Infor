@@ -21,11 +21,12 @@ const CONFIG_ = Object.freeze({
   buyerSessionTtlSeconds: 6 * 60 * 60,
   maxVerificationAttempts: 5,
   verificationLimits: Object.freeze({
-    perEmailPerHour: 3,
-    perEmailPerDay: 5,
+    perEmailPerHour: 5,
+    perEmailPerDay: 10,
     globalPerHour: 40,
-    globalPerDay: 80,
-    emailQuotaReserve: 10
+    globalPerDay: 90,
+    // 0 = usa toda a cota disponivel. Antes era 10 e podia bloquear cedo demais.
+    emailQuotaReserve: 0
   }),
   status: Object.freeze({
     waiting: 'Aguardando',
@@ -59,7 +60,10 @@ const CONFIG_ = Object.freeze({
     'quantidadePipoca',
     'tipoPipoca',
     'tiposPipoca',
-    'requestId'
+    'requestId',
+    // Compatibilidade temporaria com uma versao antiga/cache do frontend.
+    // Somente false e aceito; true continua sendo rejeitado.
+    'querRefri'
   ])
 });
 
@@ -150,22 +154,27 @@ function doPost(event) {
   } catch (error) {
     console.error(error && error.stack ? error.stack : String(error));
 
-    if (error && error.name === 'PublicError') {
-      return bridgeResponse_({
-        ok: false,
-        code: error.code,
-        error: error.message
-      }, requestId);
-    }
-
     const serviceUnavailable = isServiceUnavailableError_(error);
-    return bridgeResponse_({
+    const isPublicError = error && error.name === 'PublicError';
+    const payload = {
       ok: false,
-      code: serviceUnavailable ? 'SERVICE_UNAVAILABLE' : 'INTERNAL_ERROR',
-      error: serviceUnavailable
-        ? 'Servico temporariamente indisponivel. Tente novamente mais tarde ou retorne amanha.'
-        : 'Nao foi possivel concluir a operacao. Tente novamente mais tarde.'
-    }, requestId);
+      code: isPublicError
+        ? error.code
+        : (serviceUnavailable ? 'SERVICE_UNAVAILABLE' : 'INTERNAL_ERROR'),
+      error: isPublicError
+        ? error.message
+        : (serviceUnavailable
+          ? 'Servico temporariamente indisponivel. Tente novamente mais tarde.'
+          : 'Nao foi possivel concluir a operacao. Verifique a configuracao do backend.')
+    };
+
+    try {
+      return bridgeResponse_(payload, requestId);
+    } catch (bridgeError) {
+      console.error('Falha ao montar a resposta para o navegador (verifique ALLOWED_ORIGINS): ' +
+        (bridgeError && bridgeError.stack ? bridgeError.stack : String(bridgeError)));
+      return jsonResponse_(payload);
+    }
   }
 }
 
@@ -235,8 +244,9 @@ function getPublicServiceStatus_() {
     day,
     hour
   );
+  const remainingQuota = MailApp.getRemainingDailyQuota();
   const dailyLimitReached = globalState.dayCount >= limits.globalPerDay ||
-    MailApp.getRemainingDailyQuota() <= limits.emailQuotaReserve;
+    remainingQuota <= limits.emailQuotaReserve;
   const hourlyLimitReached = globalState.hourCount >= limits.globalPerHour;
 
   return {
@@ -317,9 +327,18 @@ function validateOrderPayload_(payload) {
 
   Object.keys(payload).forEach(function (field) {
     if (CONFIG_.acceptedPayloadFields.indexOf(field) === -1) {
-      throw new PublicError_('UNEXPECTED_FIELD', 'O pedido contem um campo nao permitido.');
+      throw new PublicError_('UNEXPECTED_FIELD', 'O pedido contem um campo nao permitido: ' + field + '.');
     }
   });
+
+  // Compatibilidade com frontend antigo/cache: se aparecer querRefri=false,
+  // ignoramos. Se vier true, nao aceitamos silenciosamente algo que nao sera cobrado.
+  if (payload.querRefri !== undefined && payload.querRefri !== false) {
+    throw new PublicError_(
+      'REFRI_UNAVAILABLE',
+      'Refrigerante nao esta disponivel neste formulario. Recarregue a pagina.'
+    );
+  }
 
   const name = normalizeName_(payload.nome);
   const className = normalizeClass_(payload.turma);
@@ -345,7 +364,6 @@ function validateOrderPayload_(payload) {
 }
 
 function normalizeTicketQuantity_(value) {
-  // Compatibilidade temporaria com o site antigo durante a troca de versoes.
   if (value === undefined) return 1;
   if (!Number.isInteger(value) || value < 1 || value > CONFIG_.maxTickets) {
     throw new PublicError_(
@@ -366,7 +384,6 @@ function normalizeName_(value) {
     throw new PublicError_('INVALID_NAME', 'Nome invalido.');
   }
 
-  // Permite letras Unicode, espaco e pontuacao comum de nomes.
   if (!/^[\p{L}\p{M}][\p{L}\p{M} .'’\-]{1,99}$/u.test(normalized)) {
     throw new PublicError_('INVALID_NAME', 'Nome invalido.');
   }
@@ -578,15 +595,18 @@ function requireVerificationEmailCapacity_(email, now) {
   const emailKey = 'OTP_RATE_EMAIL_V1_' + sha256Hex_(email).substring(0, 24);
   const globalState = normalizeVerificationRateState_(properties.getProperty(globalKey), day, hour);
   const emailState = normalizeVerificationRateState_(properties.getProperty(emailKey), day, hour);
+  const remainingQuota = MailApp.getRemainingDailyQuota();
 
   if (globalState.dayCount >= limits.globalPerDay ||
       globalState.hourCount >= limits.globalPerHour ||
       emailState.dayCount >= limits.perEmailPerDay ||
       emailState.hourCount >= limits.perEmailPerHour ||
-      MailApp.getRemainingDailyQuota() <= limits.emailQuotaReserve) {
+      remainingQuota <= limits.emailQuotaReserve) {
     throw new PublicError_(
       'EMAIL_LIMIT_REACHED',
-      'O limite de atendimentos de hoje foi atingido. Retorne amanha ou procure um responsavel.'
+      remainingQuota <= limits.emailQuotaReserve
+        ? 'A cota de envio de e-mails desta conta foi atingida. Tente novamente mais tarde.'
+        : 'O limite de solicitacoes de codigo foi atingido. Tente novamente mais tarde.'
     );
   }
 
@@ -652,7 +672,7 @@ function getVerificationLimits_(properties) {
       'MAX_VERIFICATION_EMAILS_PER_DAY',
       CONFIG_.verificationLimits.globalPerDay
     ),
-    emailQuotaReserve: positiveIntegerProperty_(
+    emailQuotaReserve: nonNegativeIntegerProperty_(
       properties,
       'MIN_REMAINING_EMAIL_QUOTA',
       CONFIG_.verificationLimits.emailQuotaReserve
@@ -663,6 +683,13 @@ function getVerificationLimits_(properties) {
 function positiveIntegerProperty_(properties, name, fallback) {
   const value = Number(properties.getProperty(name));
   return Number.isInteger(value) && value > 0 ? value : fallback;
+}
+
+function nonNegativeIntegerProperty_(properties, name, fallback) {
+  const raw = properties.getProperty(name);
+  if (raw === null || raw === '') return fallback;
+  const value = Number(raw);
+  return Number.isInteger(value) && value >= 0 ? value : fallback;
 }
 
 function requireBuyerSession_(sessionToken) {
@@ -736,7 +763,7 @@ function assertOnlyFields_(payload, allowedFields) {
   }
   Object.keys(payload).forEach(function (field) {
     if (allowedFields.indexOf(field) === -1) {
-      throw new PublicError_('UNEXPECTED_FIELD', 'A requisicao contem um campo nao permitido.');
+      throw new PublicError_('UNEXPECTED_FIELD', 'A requisicao contem um campo nao permitido: ' + field + '.');
     }
   });
 }
@@ -1051,12 +1078,15 @@ function configurarProjeto() {
     MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_HOUR: String(CONFIG_.verificationLimits.perEmailPerHour),
     MAX_VERIFICATION_EMAILS_PER_ADDRESS_PER_DAY: String(CONFIG_.verificationLimits.perEmailPerDay),
     MAX_VERIFICATION_EMAILS_PER_HOUR: String(CONFIG_.verificationLimits.globalPerHour),
-    MAX_VERIFICATION_EMAILS_PER_DAY: String(CONFIG_.verificationLimits.globalPerDay),
-    MIN_REMAINING_EMAIL_QUOTA: String(CONFIG_.verificationLimits.emailQuotaReserve)
+    MAX_VERIFICATION_EMAILS_PER_DAY: String(CONFIG_.verificationLimits.globalPerDay)
   };
   Object.keys(securityDefaults).forEach(function (name) {
     if (!properties.getProperty(name)) properties.setProperty(name, securityDefaults[name]);
   });
+
+  // Migracao da configuracao anterior, que reservava 10 e-mails e podia
+  // deixar o site indisponivel antes da cota realmente acabar.
+  properties.setProperty('MIN_REMAINING_EMAIL_QUOTA', String(CONFIG_.verificationLimits.emailQuotaReserve));
 
   const spreadsheet = openConfiguredSpreadsheet_();
   const orders = ensureSheet_(spreadsheet, CONFIG_.sheetName, ORDER_HEADERS_);
@@ -1067,6 +1097,39 @@ function configurarProjeto() {
   installEditTrigger_(spreadsheet);
 
   console.log('Configuracao concluida para: ' + spreadsheet.getUrl());
+}
+
+/**
+ * Execute manualmente para diagnosticar configuracao, origem e cota de e-mail.
+ * Nao imprime AUTH_SECRET, chave Pix nem IDs sensiveis.
+ */
+function diagnosticarBackend() {
+  const properties = PropertiesService.getScriptProperties();
+  const limits = getVerificationLimits_(properties);
+  const now = new Date();
+  const timeZone = Session.getScriptTimeZone() || 'America/Fortaleza';
+  const day = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd');
+  const hour = Utilities.formatDate(now, timeZone, 'yyyy-MM-dd-HH');
+  const state = normalizeVerificationRateState_(
+    properties.getProperty('OTP_RATE_GLOBAL_V1'),
+    day,
+    hour
+  );
+
+  const result = {
+    institutionalDomainConfigured: Boolean(normalizeDomain_(properties.getProperty('INSTITUTIONAL_DOMAIN'))),
+    allowedOrigins: getAllowedOrigins_(),
+    remainingDailyEmailQuota: MailApp.getRemainingDailyQuota(),
+    emailQuotaReserve: limits.emailQuotaReserve,
+    globalEmailsSentToday: state.dayCount,
+    globalEmailsSentThisHour: state.hourCount,
+    globalDailyLimit: limits.globalPerDay,
+    globalHourlyLimit: limits.globalPerHour,
+    publicServiceStatus: getPublicServiceStatus_()
+  };
+
+  console.log(JSON.stringify(result, null, 2));
+  return result;
 }
 
 function ensureSheet_(spreadsheet, name, headers) {
@@ -1160,6 +1223,33 @@ function replaceProtection_(sheet, description, unprotectedRanges) {
   if (protection.canDomainEdit()) protection.setDomainEdit(false);
 }
 
+/** Execute no editor com a conta que vai operar os status na planilha. */
+function instalarGatilhoDaMinhaConta() {
+  const email = normalizeEmail_(Session.getActiveUser().getEmail());
+  if (!email || !isAdminEmail_(email)) {
+    throw new Error('Entre com a conta responsavel e inclua seu e-mail em ADMIN_EMAILS antes de executar.');
+  }
+
+  const spreadsheet = openConfiguredSpreadsheet_();
+  [
+    requireConfiguredSheet_(spreadsheet, CONFIG_.sheetName, ORDER_HEADERS_),
+    requireConfiguredSheet_(spreadsheet, CONFIG_.auditSheetName, AUDIT_HEADERS_)
+  ].forEach(function (sheet) {
+    [SpreadsheetApp.ProtectionType.SHEET, SpreadsheetApp.ProtectionType.RANGE].forEach(function (type) {
+      sheet.getProtections(type).forEach(function (protection) {
+        if (!protection.isWarningOnly() && !protection.canEdit()) {
+          throw new Error('A conta precisa de permissao nas protecoes da aba ' + sheet.getName() +
+            '. Peca ao proprietario para adiciona-la sem remover o acesso da conta que executa o site.');
+        }
+      });
+    });
+  });
+
+  installEditTrigger_(spreadsheet);
+  console.log('Gatilho instalado para ' + email + '. Teste uma alteracao pela mesma conta e confira a Auditoria.');
+  console.log('Gatilhos de outras contas devem ser removidos pelos respectivos criadores.');
+}
+
 function installEditTrigger_(spreadsheet) {
   ScriptApp.getProjectTriggers().forEach(function (trigger) {
     if (trigger.getHandlerFunction() === 'aoEditarStatusSeguro') {
@@ -1201,14 +1291,16 @@ function aoEditarStatusSeguro(event) {
     if (!actor || !isAdminEmail_(actor)) {
       restorePreviousValue_(range, previous);
       appendAudit_(event.source, range.getRow(), previous, next, actor || 'nao-identificado', 'NEGADO');
-      notifySpreadsheet_(event, 'Alteracao negada: conta nao autorizada.');
+      notifySpreadsheet_(event, actor
+        ? 'Alteracao negada: e-mail ausente de ADMIN_EMAILS.'
+        : 'Alteracao negada: o Google nao informou o e-mail de quem editou. Confira o gatilho com a conta responsavel.');
       return;
     }
 
     if (!isAllowedTransition_(previous, next)) {
       restorePreviousValue_(range, previous);
       appendAudit_(event.source, range.getRow(), previous, next, actor, 'TRANSICAO_INVALIDA');
-      notifySpreadsheet_(event, 'Transicao invalida. Use Aguardando > Pago > Utilizado.');
+      notifySpreadsheet_(event, 'Transicao invalida. Use somente Aguardando > Pago > Utilizado, uma etapa por vez.');
       return;
     }
 
@@ -1245,9 +1337,15 @@ function isAdminEmail_(email) {
 
 function eventUserEmail_(event) {
   try {
-    if (event.user && event.user.getEmail()) return normalizeEmail_(event.user.getEmail());
+    const email = event && event.user ? normalizeEmail_(event.user.getEmail()) : '';
+    if (email) return email;
   } catch (error) {
-    // Falha fechada abaixo.
+    // Tente a identidade ativa, que tambem pode estar indisponivel.
+  }
+  try {
+    return normalizeEmail_(Session.getActiveUser().getEmail());
+  } catch (error) {
+    // Nunca use getEffectiveUser(): ele identifica o dono do gatilho, nao o editor.
   }
   return '';
 }
