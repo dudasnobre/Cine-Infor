@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.youtube.com data:; font-src 'self'; connect-src 'none'; form-action https://script.google.com https://*.googleusercontent.com; frame-src https://script.google.com https://*.googleusercontent.com; upgrade-insecure-requests"
+  >
+  <meta name="description" content="Cine Infor — cinema, projetos e experiências da turma de Informática.">
+  <title>Cine Infor | Home</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="site-header" id="inicio">
+    <nav class="navbar" aria-label="Navegação principal">
+
+      <a class="brand" href="#inicio" aria-label="Cine Infor - início">
+        <span class="brand-mark">CI</span>
+        <span class="brand-name">Cine<b>Infor</b></span>
+      </a>
+
+      <div class="nav-links" id="nav-links">
+        <a class="active" href="#inicio">Home</a>
+        <a href="#projeto">Projeto</a>
+        <a href="#destaques">Destaques</a>
+        <a href="#formulario">Formulário</a>
+      </div>
+
+      <a class="nav-cta" href="#formulario">
+        Formulário <span>↗</span>
+      </a>
+
+      <button
+        class="menu-toggle"
+        id="menu-toggle"
+        type="button"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+    </nav>
+  </header>
+
+
+  <main>
+
+    <!-- HERO -->
+
+    <section class="hero" id="hero" aria-label="Destaque do Cine Infor">
+
+      <img
+        src="./img/hero-cinema.png"
+        alt="Arte principal do Cine Infor com a palavra Cinema em destaque"
+        class="hero-image"
+      >
+
+      <div class="hero-overlay"></div>
+
+      <div class="hero-content">
+
+        <span class="hero-tag">
+          Turma de Informática · 2º ano
+        </span>
+
+        <h1>
+          Cine<br>Infor
+        </h1>
+
+        <p class="hero-subtitle">
+          Tecnologia, criatividade e cinema em uma única experiência.
+        </p>
+
+        <a class="button button-ghost" href="#projeto">
+          Ver o projeto <span>↓</span>
+        </a>
+
+      </div>
+
+      <div class="hero-corner">
+        2026
+      </div>
+
+    </section>
+
+
+    <!-- PERFIL -->
+
+    <section class="profile" id="projeto" aria-label="Perfil do projeto">
+
+      <div class="profile-head">
+
+        <div>
+
+          <h2>
+            Cine Infor
+            <span class="profile-year">2026</span>
+          </h2>
+
+          <p class="profile-genres">
+            Documentário · Tecnologia · 2º ano
+          </p>
+
+        </div>
+
+        <a class="profile-share" href="#formulario">
+          Formulário <span>↗</span>
+        </a>
+
+      </div>
+
+
+      <div class="stat-row">
+
+        <div class="stat-chip">
+
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6l-8-3Z"/>
+          </svg>
+
+          <div>
+            <span>Classificação</span>
+            <strong>14 anos</strong>
+          </div>
+
+        </div>
+
+
+        <div class="stat-chip">
+
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3.2 2"/>
+          </svg>
+
+          <div>
+            <span>Duração</span>
+            <strong>1 hora e 49 minutos
+            </strong>
+          </div>
+
+        </div>
+
+
+        <div class="stat-chip stat-chip-precos">
+
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="6.5" width="17" height="11" rx="2"/>
+            <path d="M3.5 10.5h17M8 15h2"/>
+          </svg>
+
+          <div class="precos-lista">
+
+            <div class="precos-destaque">
+              <span>Ingresso</span>
+              <strong id="precoIngresso">R$ 2,00</strong>
+            </div>
+
+            <div>
+              <span>Pipoca (unid.)</span>
+              <strong id="precoPipoca">R$ 1,50</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="stat-chip">
+
+          <svg viewBox="0 0 24 24">
+            <rect x="4" y="5" width="16" height="15" rx="2"/>
+            <path d="M4 9.5h16M8 3v3.5M16 3v3.5"/>
+          </svg>
+
+          <div>
+            <span>Estreia</span>
+            <strong>28 de Setembro/12h</strong>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="profile-body">
+
+        <div class="profile-side">
+
+          <div
+            class="poster-slot"
+        
+          >
+          <img src="./img/IMG_2305.JPG" alt="Cartaz Filme" id="anabelle">
+
+          </div>
+
+
+          <dl class="credits">
+
+            <div>
+              <dt>Direção</dt>
+              <dd>Turma 2º Infor</dd>
+            </div>
+
+            <div>
+              <dt>Roteiro</dt>
+              <dd>Turma 2º Infor</dd>
+            </div>
+
+            <div>
+              <dt>Elenco</dt>
+              <dd>Alunos 2025</dd>
+            </div>
+
+          </dl>
+
+        </div>
+
+
+        <div class="profile-main">
+
+          <div
+            class="quicklinks"
+            aria-label="Atalhos do perfil"
+          >
+
+            <a href="#destaques">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 20.5v-1.25a3.25 3.25 0 0 0-3.25-3.25h-3.5A3.25 3.25 0 0 0 7 19.25v1.25M15.5 8.25a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"/>
+              </svg>
+              <span>Equipe</span>
+            </a>
+
+            <a href="#">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v11m0 0-3.5-3.5M12 14l3.5-3.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/>
+              </svg>
+              <span>Bastidores</span>
+            </a>
+
+            <a href="#sinopse">
+              <svg viewBox="0 0 24 24">
+                <path d="M5 4h11l3 3v13H5V4Zm3 5h7M8 12h7M8 15h4"/>
+              </svg>
+              <span>Sinopse</span>
+            </a>
+
+            <a href="#">
+              <svg viewBox="0 0 24 24">
+                <rect x="3.5" y="5" width="17" height="14" rx="1.5"/>
+                <path d="m3.5 15 4.5-4 3 2.5 4-4.5L20.5 14"/>
+              </svg>
+              <span>Galeria</span>
+            </a>
+
+            <a href="#frase">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 8.5c-1.8.6-3 2.2-3 4.2 0 1.9 1.4 3.3 3.1 3.3M16 8.5c-1.8.6-3 2.2-3 4.2 0 1.9 1.4 3.3 3.1 3.3"/>
+              </svg>
+              <span>Frases</span>
+            </a>
+
+            <a href="#">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 8v4.2l3 1.8"/>
+              </svg>
+              <span>Curiosidades</span>
+            </a>
+
+          </div>
+
+
+          <p id="sinopse" class="synopsis">
+
+           Deu tédio na hora do almoço? A Infor25 tem a solução! Venha assistir a filmes no horário do almoço por um preço incrível. O ingresso e a pipoca são pagos separadamente, com preços acessíveis para você aproveitar a sessão completa. Então, está esperando o quê? Venha curtir essa experiência de cinema com a gente!
+
+
+          </p>
+
+
+          <a
+            class="trailer-slot"
+            href="https://youtu.be/N_-rLOuM54Q?si=A394VWtRmTnlcsYS"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Assistir ao trailer do projeto no YouTube"
+          >
+
+            <img
+              src="https://img.youtube.com/vi/N_-rLOuM54Q/maxresdefault.jpg"
+              alt="Capa do vídeo do Cine Infor no YouTube"
+              class="trailer-thumb"
+              id="trailerThumb"
+              loading="lazy"
+            >
+
+            <span class="trailer-overlay" aria-hidden="true"></span>
+
+            <span class="trailer-play" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M9.5 7.5v9l7-4.5-7-4.5Z"/>
+              </svg>
+            </span>
+
+            <span class="trailer-label">
+              Assistir ao trailer no YouTube <strong>↗</strong>
+            </span>
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- FRASE -->
+
+    <section class="quote-band" id="frase">
+
+      <blockquote>
+        Cada linha de código é uma cena.<br>
+        Cada projeto, um filme que a gente estreia.
+      </blockquote>
+
+      <span>
+        Turma de Informática · 2º ano · 2025
+      </span>
+
+    </section>
+
+
+    <!-- DESTAQUES -->
+
+    <section class="related" id="destaques">
+
+      <div class="section-heading">
+
+        <h2>
+          Próximas sessões
+        </h2>
+
+        <p>
+          Espaço reservado para os filmes que vamos exibir no auditório da escola.
+        </p>
+
+      </div>
+
+
+      <div class="movie-grid">
+
+        <article class="movie-slot">
+          <span>+</span>
+          <p>Filme em breve</p>
+        </article>
+
+        <article class="movie-slot">
+          <span>+</span>
+          <p>Filme em breve</p>
+        </article>
+
+        <article class="movie-slot">
+          <span>+</span>
+          <p>Filme em breve</p>
+        </article>
+
+        <article class="movie-slot">
+          <span>+</span>
+          <p>Filme em breve</p>
+        </article>
+
+        <article class="movie-slot">
+          <span>+</span>
+          <p>Filme em breve</p>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- FORMULÁRIO -->
+    <!-- ========================= -->
+
+    <section class="form-section" id="formulario">
+
+      <div class="cine-form-card">
+
+
+        <!-- CABEÇALHO DO FORMULÁRIO -->
+
+        <div class="cine-form-header">
+
+          <span class="form-eyebrow">
+            CINE INFOR · 2026
+          </span>
+
+          <h2>
+            Formulário Cine Infor
+          </h2>
+
+          <p>
+            Preencha seus dados e confirme sua presença para a sessão.
+          </p>
+
+          <a
+            class="button button-ghost"
+            style="margin-top: 16px;"
+            href="https://wa.me/5585999999999?text=Ol%C3%A1%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Cine%20Infor"
+            target="_blank"
+            rel="noopener"
+          >
+            Falar no WhatsApp <span>↗</span>
+          </a>
+
+        </div>
+
+
+        <form id="formCineInfor">
+
+          <!-- CONFIRMAÇÃO DO E-MAIL INSTITUCIONAL -->
+
+          <div class="campo verificacao-email">
+
+            <label for="emailInstitucional">
+              E-mail institucional:
+            </label>
+
+            <p class="campo-ajuda">
+              Enviaremos um código para confirmar que a conta educacional é sua.
+            </p>
+
+            <div class="verificacao-linha">
+              <input
+                type="email"
+                id="emailInstitucional"
+                autocomplete="email"
+                required
+                placeholder="seu.nome@aluno.ce.gov.br"
+              >
+
+              <button
+                type="button"
+                id="btnEnviarCodigo"
+                class="button-secundario verificacao-botao"
+              >
+                Enviar código
+              </button>
+            </div>
+
+            <div id="blocoCodigo" class="verificacao-codigo" hidden>
+              <input
+                type="text"
+                id="codigoVerificacao"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                placeholder="Código de 6 números"
+                aria-label="Código de verificação"
+              >
+
+              <button
+                type="button"
+                id="btnConfirmarCodigo"
+                class="button-secundario verificacao-botao"
+              >
+                Confirmar e-mail
+              </button>
+            </div>
+
+            <div id="emailStatus" class="email-status" aria-live="polite"></div>
+
+          </div>
+
+          <fieldset id="dadosPedido" disabled>
+
+
+          <!-- NOME -->
+
+          <div class="campo">
+
+            <label for="nome">
+              Nome completo:
+            </label>
+
+            <input
+              type="text"
+              id="nome"
+              required
+              placeholder="Digite seu nome.."
+            >
+
+          </div>
+
+
+          <!-- TURMA -->
+
+          <div class="campo">
+
+            <label for="turma">
+              Turma:
+            </label>
+
+            <select id="turma" required>
+
+              <option value="">
+                Selecione sua turma
+              </option>
+
+              <option value="1 ano Administração">
+                1 ano Administração
+              </option>
+
+              <option value="1 ano Enfermagem">
+                1 ano Enfermagem
+              </option>
+
+              <option value="1 ano Informática">
+                1 ano Informática
+              </option>
+
+              <option value="1 ano Secretaria">
+                1 ano Secretaria
+              </option>
+
+              <option value="2 ano Agronegócio">
+                2 ano Agronegócio
+              </option>
+
+              <option value="2 ano Enfermagem">
+                2 ano Enfermagem
+              </option>
+
+              <option value="2 ano Finanças">
+                2 ano Finanças
+              </option>
+
+              <option value="2 ano Informática">
+                2 ano Informática
+              </option>
+
+              <option value="3 ano Administração">
+                3 ano Administração
+              </option>
+
+              <option value="3 ano Enfermagem">
+                3 ano Enfermagem
+              </option>
+
+              <option value="3 ano Informática">
+                3 ano Informática
+              </option>
+
+              <option value="3 ano Logística">
+                3 ano Logística
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- INGRESSOS -->
+
+          <div class="campo">
+
+            <label>
+              Quantos ingressos? <span id="precoIngressoTexto" class="preco-ajuda">(R$ 2,00 cada)</span>
+            </label>
+
+            <p class="campo-ajuda">Escolha de 1 a 10 ingressos neste pedido.</p>
+
+            <div class="stepper" id="ingressoQtdStepper">
+
+              <button
+                type="button"
+                class="stepper-btn"
+                id="ingressoQtdMenos"
+                aria-label="Diminuir quantidade de ingressos"
+              >−</button>
+
+              <span id="ingressoQtdValor" aria-live="polite">1</span>
+
+              <button
+                type="button"
+                class="stepper-btn"
+                id="ingressoQtdMais"
+                aria-label="Aumentar quantidade de ingressos"
+              >+</button>
+
+            </div>
+
+          </div>
+
+
+          <!-- PIPOCA -->
+
+          <div class="campo">
+
+            <label>
+              Vai querer pipoca?
+            </label>
+
+            <div class="opcoes">
+
+              <label>
+
+                <input
+                  type="radio"
+                  name="pipoca"
+                  value="sim"
+                  id="pipocaSim"
+                  required
+                >
+
+                <span>Sim</span>
+
+              </label>
+
+
+              <label>
+
+                <input
+                  type="radio"
+                  name="pipoca"
+                  value="nao"
+                  id="pipocaNao"
+                >
+
+                <span>Não</span>
+
+              </label>
+
+            </div>
+
+          </div>
+
+
+          <!-- ================================= -->
+          <!-- TIPO DA PIPOCA -->
+          <!-- APARECE AO CLICAR EM SIM -->
+          <!-- ================================= -->
+
+          <div
+            class="campo campo-pipoca"
+            id="blocoTipoPipoca"
+            style="display: none;"
+          >
+
+            <label>
+              Quantas pipocas? <span id="precoPipocaTexto" style="color:var(--muted); font-weight:500;">(R$ 1,50 cada)</span>
+            </label>
+
+            <div class="stepper" id="pipocaQtdStepper">
+
+              <button
+                type="button"
+                class="stepper-btn"
+                id="pipocaQtdMenos"
+                aria-label="Diminuir quantidade de pipoca"
+              >−</button>
+
+              <span id="pipocaQtdValor">1</span>
+
+              <button
+                type="button"
+                class="stepper-btn"
+                id="pipocaQtdMais"
+                aria-label="Aumentar quantidade de pipoca"
+              >+</button>
+
+            </div>
+
+            <p class="campo-ajuda">Pipoca salgada, feita na hora.</p>
+
+          </div>
+
+
+          </fieldset>
+
+
+          <!-- BOTÃO -->
+
+          <button
+            type="submit"
+            id="btnEnviar"
+            class="form-submit"
+            disabled
+          >
+            Gerar Pix
+          </button>
+
+        </form>
+
+
+        <div
+          id="status"
+          class="form-status"
+          aria-live="polite"
+        ></div>
+
+
+        <!-- RESULTADO DO PEDIDO: resumo + QR Code Pix + ticket em PDF -->
+
+        <div
+          id="resultadoPedido"
+          class="resultado-pedido"
+          style="display: none;"
+        >
+
+          <div class="resultado-header">
+
+            <h3>Pedido confirmado!</h3>
+
+            <p>
+              Escaneie o QR Code com o app do seu banco para pagar, ou copie o código Pix.
+              Depois do pagamento, você pode voltar mais tarde para conferir a confirmação.
+            </p>
+
+            <p class="aviso-reembolso">
+              Em caso de reembolso, entre em contato pelo
+              <a
+                href="https://wa.me/5585999999999?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20reembolso%20de%20um%20pedido%20do%20Cine%20Infor."
+                target="_blank"
+                rel="noopener noreferrer"
+              >WhatsApp</a>.
+            </p>
+
+            <div id="pagamentoStatus" class="pagamento-status aguardando" role="status" aria-live="polite">
+              <span class="pagamento-status-icone" aria-hidden="true"></span>
+              <div>
+                <strong id="pagamentoStatusTitulo">Aguardando confirmação</strong>
+                <span id="pagamentoStatusTexto">Após fazer o Pix, deixe esta aba aberta. Você pode voltar mais tarde: o status será atualizado automaticamente.</span>
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="resultado-body">
+
+            <div class="resumo-pedido">
+
+              <h4>Resumo do pedido</h4>
+
+              <ul id="resumoLista"></ul>
+
+              <div class="resumo-total">
+                <span>Total a pagar</span>
+                <strong id="resumoTotal">R$ 0,00</strong>
+              </div>
+
+            </div>
+
+
+            <div class="qr-pagamento">
+
+              <div id="qrcode"></div>
+
+              <span class="qr-legenda">Pix Copia e Cola</span>
+
+              <button
+                type="button"
+                id="btnCopiarPix"
+                class="button-secundario"
+              >
+                Copiar código Pix
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            id="btnGerarTicket"
+            class="btn-ticket"
+            disabled
+          >
+            Ticket disponível após a confirmação
+          </button>
+
+          <button
+            type="button"
+            id="btnNovoPedido"
+            class="button-secundario btn-novo-pedido"
+            hidden
+          >
+            Fazer outro pedido
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+
+  <footer class="footer">
+
+    <div class="footer-top">
+
+      <div>
+
+        <a class="brand footer-brand" href="#inicio">
+
+          <span class="brand-mark">
+            CI
+          </span>
+
+          <span class="brand-name">
+            Cine<b>Infor</b>
+          </span>
+
+        </a>
+
+        <p>
+          Eeep José Maria Falcão· Curso de Informática · 2º ano · Turma 2025
+        </p>
+
+      </div>
+
+
+      <div>
+
+        <span class="footer-label">
+          Newsletter
+        </span>
+
+        <form
+          id="newsletterForm"
+          class="footer-form"
+        >
+
+          <input
+            type="email"
+            placeholder="Seu e-mail"
+            aria-label="E-mail para newsletter"
+          >
+
+          <button type="submit">
+            Inscrever
+          </button>
+
+        </form>
+
+      </div>
+
+
+      <div>
+
+        <span class="footer-label">
+          Frase
+        </span>
+
+        <p class="footer-quote">
+          “Formando ideias, editando o futuro.”
+        </p>
+
+      </div>
+
+
+      <div>
+
+        <span class="footer-label">
+          Menu
+        </span>
+
+        <a href="#inicio">Home</a>
+        <a href="#projeto">Projeto</a>
+        <a href="#destaques">Destaques</a>
+        <a href="#formulario">Formulário</a>
+
+      </div>
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+      <span>
+        © 2025 Cine Infor
+      </span>
+
+      <span>
+        Feito pela turma de Informática
+      </span>
+
+    </div>
+
+  </footer>
+
+
+  <!-- BOTÃO FLUTUANTE WHATSAPP -->
+
+  <a
+    class="whatsapp-float"
+    href="https://wa.me/5585999999999?text=Ol%C3%A1%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Cine%20Infor"
+    target="_blank"
+    rel="noopener"
+    aria-label="Falar com o Cine Infor no WhatsApp"
+  >
+
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.87.5 3.62 1.44 5.14L2 22l5.13-1.53a9.87 9.87 0 0 0 4.91 1.3h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm5.8 14.06c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.12.11-1.8-.11-.42-.13-.96-.31-1.66-.6-2.92-1.26-4.83-4.18-4.98-4.38-.15-.2-1.19-1.58-1.19-3.01 0-1.43.75-2.13 1.02-2.42.27-.29.58-.36.78-.36h.55c.18 0 .43-.06.66.5.27.65.9 2.24.98 2.4.08.16.13.35.02.56-.1.2-.16.33-.31.5-.15.18-.32.4-.46.54-.15.15-.31.31-.14.6.18.29.8 1.32 1.72 2.14 1.19 1.06 2.19 1.39 2.5 1.55.31.16.5.13.68-.06.19-.2.79-.92.99-1.24.2-.31.4-.26.68-.16.28.1 1.79.85 2.09 1 .31.15.51.23.59.36.08.13.08.75-.16 1.43Z"/>
+    </svg>
+
+    <span>Falar no WhatsApp</span>
+
+  </a>
+
+
+  <!-- BIBLIOTECA: QR CODE DO PIX -->
+
+  <script src="vendor/qrcode.min.js"></script>
+
+
+  <!-- JAVASCRIPT -->
+
+  <script src="script.js"></script>
+
+</body>
+</html>
